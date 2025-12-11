@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  company_domain String? // Extracted from email, max 100
+  skill_level    String   @default("Beginner") // Enum: Beginner, Intermediate, Advanced, Pro
+  bio            String?
+  is_super_admin Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  events         Event[]
+  participants   Participant[]
+  recommendations Recommendation[]
+  created_clubs  Club[]
+  club_memberships ClubMember[]
+}
+
+model Recommendation {
+  id             String   @id @default(uuid())
+  recommender_id String
+  recommender    User     @relation(fields: [recommender_id], references: [id])
+  name           String
+  contact_info   String
+  status         String   @default("Pending") // Enum: Pending, Invited, Joined
+  event_id       String?
+  event          Event?   @relation(fields: [event_id], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([recommender_id])
+}
+
+model CorporatePartner {
+  id             String   @id @default(uuid())
+  domain         String   @unique
+  name           String
+  hrms_provider  String   // e.g. "Workday", "BambooHR"
+  api_key        String   @default(uuid()) // Simple API key for demo
+  webhook_secret String   @default(uuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Club {
+  id             String   @id @default(uuid())
+  name           String
+  description    String
+  category       String   // e.g. Sports, Quiz, Arts, Book
+  company_domain String
+  created_by_id  String
+  created_by     User     @relation(fields: [created_by_id], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  members        ClubMember[]
+  events         Event[]
+
+  @@index([company_domain])
+}
+
+model ClubMember {
+  id        String   @id @default(uuid())
+  club_id   String
+  club      Club     @relation(fields: [club_id], references: [id])
+  user_id   String
+  user      User     @relation(fields: [user_id], references: [id])
+  role      String   @default("Member") // Enum: Admin, Member
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([club_id, user_id])
+}
+
+model Event {
+  id             String   @id @default(uuid())
+  organizer_id   String
+  organizer      User     @relation(fields: [organizer_id], references: [id])
+  club_id        String?
+  club           Club?    @relation(fields: [club_id], references: [id])
+  sport          String
+  start_time     DateTime
+  end_time       DateTime
+  venue_name     String
+  map_link       String
+  max_players    Int
+  estimated_cost Decimal
+  actual_cost    Decimal?
+  status         String   @default("Draft") // Enum: Draft, Open, Booked, Completed, Canceled
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  participants   Participant[]
+  recommendations Recommendation[]
+
+  @@index([organizer_id])
+  @@index([start_time])
+}
+
+model Participant {
+  id        String   @id @default(uuid())
+  event_id  String
+  event     Event    @relation(fields: [event_id], references: [id])
+  user_id   String
+  user      User     @relation(fields: [user_id], references: [id])
+  status    String   @default("Declined") // Enum: Confirmed, Waitlist, Declined, Organizer
+  is_paid   Boolean  @default(false)
+  amount_due Decimal  @default(0)
+  paid_by_id String?  // ID of the User who paid for this participant
+  transport_mode String @default("Independent") // Enum: Independent, Driver, Rider
+  car_seats      Int    @default(0)
+  pickup_location String?
+  assigned_driver_id String? // ID of the User who is driving this participant
+  team_name      String?  // e.g. "Red", "Blue", "Team A"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([event_id, user_id])
+}
