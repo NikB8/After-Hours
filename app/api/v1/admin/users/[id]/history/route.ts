@@ -1,20 +1,21 @@
-
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await auth();
     const isSuperAdmin = (session?.user as any)?.is_super_admin;
-    if (!isSuperAdmin) {
+
+    // Await params first to use its value in the authorization check
+    const { id: userId } = await params;
+
+    // Allow super admins or the user themselves to view their history
+    if (!isSuperAdmin && session?.user?.id !== userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Await params if using Next.js 15+, but standard 14 approach:
-    // Actually safe to just use params.id usually, but let's be careful.
-    const userId = params.id;
 
     try {
         // Fetch Participation History

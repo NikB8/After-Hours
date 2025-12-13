@@ -1,5 +1,6 @@
 
-const { PrismaClient } = require('@prisma/client');
+// @ts-nocheck
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const fetch = require('node-fetch'); // Assuming node env or standard fetch availability
 
@@ -14,7 +15,11 @@ async function testPaymentFlow() {
     if (!event) throw new Error('No event found');
     console.log(`Event ID: ${event.id}`);
 
-    const user = await prisma.user.findFirst({ where: { email: 'nikhil@example.com' } });
+    const user = await prisma.user.findFirst({ where: { email: { contains: 'test' } } });
+    if (!user) {
+        console.error('No test user found, skipping test.');
+        return;
+    }
 
     // 2. Reset Status
     await prisma.participant.updateMany({

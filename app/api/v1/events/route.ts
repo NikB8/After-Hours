@@ -13,12 +13,11 @@ export async function POST(request: Request) {
             map_link,
             max_players,
             estimated_cost,
-            organizer_email // Mock auth
         } = body;
 
         // AUTHENTICATION
         const session = await auth();
-        if (!session || !session.user || !session.user.email) {
+        if (!session?.user?.id || !session?.user?.email) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -29,62 +28,43 @@ export async function POST(request: Request) {
         }
 
         // Basic validation
-        if (!sport || !start_time || !end_time || !venue_name || !map_link || !max_players || !estimated_cost) {
+        if (!sport || !start_time || !venue_name || !map_link || !max_players || !estimated_cost) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        const userId = session.user.id;
+        const companyId = (session.user as any).primary_company_id || null;
+
         // 3. Create Event & Assign Role (if needed)
-        const event = await prisma.$transaction(async (tx: any) => {
+        const event = await prisma.$transaction(async (tx) => {
             const newEvent = await tx.event.create({
                 data: {
-                    organizer_id: session.user.id,
-                    company_id: (session.user as any).primary_company_id || null, // Assuming fetched in session or available via user lookup
+                    organizer_id: userId,
+                    company_id: companyId,
                     sport: body.sport,
                     start_time: new Date(body.start_time),
-                    end_time: new Date(body.end_time),
+                    end_time: body.end_time ? new Date(body.end_time) : new Date(new Date(body.start_time).getTime() + 60 * 60 * 1000), // Default 1h
                     venue_name: body.venue_name,
                     map_link: body.map_link,
-                    max_players: body.max_players,
-                    estimated_cost: body.estimated_cost,
+                    max_players: parseInt(str(body.max_players)) || 10,
+                    estimated_cost: parseFloat(str(body.estimated_cost)) || 0,
                     club_id: body.club_id || null,
-                    status: 'Draft', // Default status
+                    status: 'Open',
                 }
             });
 
-            // 4. Dynamic Organizer Role Assignment
-            // Check if user already has 'Organizer' role
-            const hasOrganizerRole = await tx.userRole.findFirst({
-                where: {
-                    user_id: session.user.id,
-                    role: { name: 'Organizer' }
+            // 4. Also add Organizer as a 'Confirmed' Participant (Creator usually plays)
+            await tx.participant.create({
+                data: {
+                    event_id: newEvent.id,
+                    user_id: userId,
+                    status: 'Confirmed',
+                    is_paid: true,
+                    payment_status: 'Paid'
                 }
             });
-
-            if (!hasOrganizerRole) {
-                const organizerRole = await tx.role.findUnique({ where: { name: 'Organizer' } });
-                if (organizerRole) {
-                    await tx.userRole.create({
-                        data: {
-                            user_id: session.user.id,
-                            role_id: organizerRole.id,
-                            company_id: (session.user as any).primary_company_id || null
-                        }
-                    });
-                }
-            }
 
             return newEvent;
-        });
-
-        // 5. Add Organizer as Participant (Confirmed)
-        await prisma.participant.create({
-            data: {
-                event_id: event.id,
-                user_id: session.user.id,
-                status: 'Organizer',
-                is_paid: true, // Organizer handles money, effectively paid/exempt
-                payment_status: 'Paid'
-            }
         });
 
         return NextResponse.json({ id: event.id }, { status: 201 });
@@ -92,6 +72,11 @@ export async function POST(request: Request) {
         console.error('Error creating event:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
+}
+
+// Helper to safely stringify for parsing
+function str(val: any): string {
+    return String(val);
 }
 
 export async function GET(request: Request) {

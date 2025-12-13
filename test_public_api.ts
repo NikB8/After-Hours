@@ -1,4 +1,4 @@
-
+export { }; // Make this a module
 async function main() {
     const eventId = 'da71e667-b44a-421b-9679-8fe3335974f0';
     const url = `http://localhost:3000/api/v1/events/${eventId}/public`;

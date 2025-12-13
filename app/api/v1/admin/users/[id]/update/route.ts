@@ -3,14 +3,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await auth();
     const isSuperAdmin = (session?.user as any)?.is_super_admin;
     if (!isSuperAdmin) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
 
     try {
         const body = await req.json();

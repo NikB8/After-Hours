@@ -1,6 +1,5 @@
-
-const { PrismaClient: PrismaClientExp } = require('@prisma/client');
-const prismaExp = new PrismaClientExp();
+import { PrismaClient } from '@prisma/client';
+const prismaExp = new PrismaClient();
 
 async function main() {
     console.log("--- Testing Expense Flow ---");

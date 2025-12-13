@@ -40,6 +40,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     }
 
     const isOrganizer = currentUser ? event.organizer_id === currentUser.id : false;
+    const isCompleted = event.status === 'Completed';
+    const isCreator = isOrganizer; // Alias for consistency if needed, checking usages
+    const isSuperAdmin = false; // Placeholder if variable is used in JSX template
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

@@ -3,14 +3,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const session = await auth();
     const isSuperAdmin = (session?.user as any)?.is_super_admin;
     if (!isSuperAdmin) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const eventId = params.id;
+    const { id: eventId } = await params;
 
     try {
         const { reason } = await req.json();
