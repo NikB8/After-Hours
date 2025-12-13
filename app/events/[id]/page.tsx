@@ -85,7 +85,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                         <div className="space-y-4">
                             <div>
                                 <h3 className="text-sm font-medium text-gray-500">Cost</h3>
-                                <p className="mt-1 text-lg text-gray-900">${event.estimated_cost.toString()}</p>
+                                <p className="mt-1 text-lg text-gray-900">₹{event.estimated_cost.toString()}</p>
                             </div>
                         </div>
                     </div>

@@ -30,9 +30,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 }
 
                 // Verify password
-                import("bcryptjs").then(bcrypt => bcrypt.compare(password, user.password || ""));
-                // Note: handling async import or just require it at top.
-                // let's use standard import at top for cleaner code in next step if needed, but here:
+
+
+
                 const bcrypt = await import("bcryptjs");
                 const isValid = await bcrypt.compare(password, user.password);
 
@@ -82,5 +82,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return session;
         }
     },
-    session: { strategy: "jwt" }
+    session: { strategy: "jwt" },
+    pages: {
+        signIn: '/'
+    }
 })

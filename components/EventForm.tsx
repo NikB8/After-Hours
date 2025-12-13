@@ -78,7 +78,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
             )}
 
             <div>
-                <label className="form-label">Sport / Activity</label>
+                <label className="form-label">Sport / Activity <span className="text-red-500">*</span></label>
                 {showCustomSport ? (
                     <div className="flex gap-2">
                         <input
@@ -129,7 +129,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                    <label className="form-label">Start Time</label>
+                    <label className="form-label">Start Time <span className="text-red-500">*</span></label>
                     <input
                         type="datetime-local"
                         name="start_time"
@@ -141,7 +141,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                 </div>
 
                 <div>
-                    <label className="form-label">End Time</label>
+                    <label className="form-label">End Time <span className="text-red-500">*</span></label>
                     <input
                         type="datetime-local"
                         name="end_time"
@@ -154,7 +154,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
             </div>
 
             <div>
-                <label className="form-label">Venue Name</label>
+                <label className="form-label">Venue Name <span className="text-red-500">*</span></label>
                 <input
                     type="text"
                     name="venue_name"
@@ -167,7 +167,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
             </div>
 
             <div>
-                <label className="form-label">Google Maps Link</label>
+                <label className="form-label">Google Maps Link <span className="text-red-500">*</span></label>
                 <input
                     type="url"
                     name="map_link"
@@ -181,7 +181,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                    <label className="form-label">Max Players</label>
+                    <label className="form-label">Max Players <span className="text-red-500">*</span></label>
                     <input
                         type="number"
                         name="max_players"
@@ -194,10 +194,10 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                 </div>
 
                 <div>
-                    <label className="form-label">Estimated Cost (Total)</label>
+                    <label className="form-label">Estimated Cost (Total) <span className="text-red-500">*</span></label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 sm:text-sm">$</span>
+                            <span className="text-gray-500 sm:text-sm">₹</span>
                         </div>
                         <input
                             type="number"

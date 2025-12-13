@@ -62,15 +62,15 @@ export default function PaymentDueCard({ eventId, userEmail }: { eventId: string
             <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
                     <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Total Cost</p>
-                    <p className="text-lg font-black text-gray-900">${data.total_cost.toFixed(2)}</p>
+                    <p className="text-lg font-black text-gray-900">₹{data.total_cost.toFixed(2)}</p>
                 </div>
                 <div className="bg-green-50 p-3 rounded-lg border border-green-100 text-center">
                     <p className="text-xs text-green-700 uppercase tracking-wider font-bold">Collected</p>
-                    <p className="text-lg font-black text-green-700">${data.total_collected.toFixed(2)}</p>
+                    <p className="text-lg font-black text-green-700">₹{data.total_collected.toFixed(2)}</p>
                 </div>
                 <div className="bg-red-50 p-3 rounded-lg border border-red-100 text-center">
                     <p className="text-xs text-red-700 uppercase tracking-wider font-bold">Still Owed</p>
-                    <p className="text-lg font-black text-red-700">${data.total_outcome_outstanding.toFixed(2)}</p>
+                    <p className="text-lg font-black text-red-700">₹{data.total_outcome_outstanding.toFixed(2)}</p>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@ export default function PaymentDueCard({ eventId, userEmail }: { eventId: string
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-6 border border-gray-100">
                 <div>
                     <p className="text-sm font-bold text-gray-700">Your Share</p>
-                    <p className="text-2xl font-black text-gray-900">${Number(data.my_amount_due).toFixed(2)}</p>
+                    <p className="text-2xl font-black text-gray-900">₹{Number(data.my_amount_due).toFixed(2)}</p>
                 </div>
                 <div>
                     {data.my_is_paid ? (

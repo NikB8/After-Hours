@@ -105,15 +105,15 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                     <div className="grid grid-cols-3 gap-4 text-center mb-6">
                         <div className="bg-gray-50 p-3 rounded-lg">
                             <div className="text-xs text-gray-500 uppercase font-semibold">Total Cost</div>
-                            <div className="text-lg font-bold text-gray-900">${totalDue.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-gray-900">₹{totalDue.toFixed(2)}</div>
                         </div>
                         <div className="bg-green-50 p-3 rounded-lg">
                             <div className="text-xs text-green-600 uppercase font-semibold">Collected</div>
-                            <div className="text-lg font-bold text-green-700">${totalCollected.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-green-700">₹{totalCollected.toFixed(2)}</div>
                         </div>
                         <div className="bg-red-50 p-3 rounded-lg">
                             <div className="text-xs text-red-600 uppercase font-semibold">Remaining</div>
-                            <div className="text-lg font-bold text-red-700">${remaining.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-red-700">₹{remaining.toFixed(2)}</div>
                         </div>
                     </div>
 
@@ -144,7 +144,7 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                                 <li key={p.id} className="py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <span className="text-sm font-medium text-gray-900">{p.user.email}</span>
-                                        <div className="text-xs text-gray-500">Due: ${Number(p.amount_due).toFixed(2)}</div>
+                                        <div className="text-xs text-gray-500">Due: ₹{Number(p.amount_due).toFixed(2)}</div>
                                         {p.is_paid && p.paid_by_email && p.paid_by_email !== p.user.email && (
                                             <div className="text-xs text-blue-600">Paid by {p.paid_by_email}</div>
                                         )}
@@ -203,7 +203,7 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                     {myParticipant ? (
                         <div>
                             <div className="text-sm text-gray-500 mb-1">Your Share</div>
-                            <div className="text-3xl font-bold text-gray-900 mb-4">${Number(myParticipant.amount_due).toFixed(2)}</div>
+                            <div className="text-3xl font-bold text-gray-900 mb-4">₹{Number(myParticipant.amount_due).toFixed(2)}</div>
                             <span
                                 className={`px-4 py-2 rounded-full text-sm font-medium ${myParticipant.is_paid
                                     ? 'bg-green-100 text-green-800'

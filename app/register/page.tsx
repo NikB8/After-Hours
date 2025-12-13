@@ -8,9 +8,22 @@ import { Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
     const router = useRouter();
-    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [formData, setFormData] = useState({ name: '', companyName: '', email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false); // New State
     const [error, setError] = useState('');
+    // ... existing code ...
+
+    // (Inside JSX)
+    // ...
+    // ...
+    // ...
+    // Note: I will use a larger replacement to cover the insertion point more cleanly in the next chunk or here.
+    // The previous tool call output shows the state definition at line 11.
+    // I will replace lines 11-13.
+    // And then insert the input field.
+
+    // Let's do state update first.
+
     // ... existing code ...
 
     // (Inside JSX)
@@ -57,11 +70,16 @@ export default function RegisterPage() {
                     password: formData.password,
                 });
 
+                console.log('Auto-login result:', result);
+
                 if (result?.error) {
-                    router.push('/api/auth/signin'); // Fallback if auto-login fails
+                    console.error('Auto-login failed:', result.error);
+                    setError('Account created, but auto-login failed. Please sign in manually.');
+                    // Don't redirect to /api/auth/signin, let user stay or go to home to login
+                    setTimeout(() => router.push('/'), 2000);
                 } else {
-                    router.push('/');
                     router.refresh();
+                    router.push('/');
                 }
             } else {
                 const data = await res.json();
@@ -95,9 +113,22 @@ export default function RegisterPage() {
                                 type="text"
                                 required
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                                placeholder="Full Name"
+                                placeholder="Full Name *"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="companyName" className="sr-only">Company Name</label>
+                            <input
+                                id="companyName"
+                                name="companyName"
+                                type="text"
+                                required
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                placeholder="Company Name *"
+                                value={formData.companyName}
+                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                             />
                         </div>
                         <div>
@@ -108,7 +139,7 @@ export default function RegisterPage() {
                                 type="email"
                                 required
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
+                                placeholder="Email address *"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
@@ -121,7 +152,7 @@ export default function RegisterPage() {
                                 type={showPassword ? "text" : "password"}
                                 required
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm pr-10"
-                                placeholder="Password"
+                                placeholder="Password *"
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />

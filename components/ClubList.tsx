@@ -16,6 +16,7 @@ export default function ClubList({ userEmail }: { userEmail: string }) {
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
     const [newClub, setNewClub] = useState({ name: '', description: '', category: 'Sports' });
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchClubs();
@@ -35,19 +36,25 @@ export default function ClubList({ userEmail }: { userEmail: string }) {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
         try {
             const res = await fetch('/api/v1/clubs', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...newClub, user_email: userEmail }),
             });
+
             if (res.ok) {
-                setShowCreate(false);
                 setNewClub({ name: '', description: '', category: 'Sports' });
+                setShowCreate(false);
                 fetchClubs();
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Failed to create club');
             }
         } catch (error) {
             console.error('Error creating club:', error);
+            setError('An error occurred while creating the club');
         }
     };
 
@@ -68,8 +75,13 @@ export default function ClubList({ userEmail }: { userEmail: string }) {
             {showCreate && (
                 <form onSubmit={handleCreate} className="bg-white p-6 rounded-lg shadow-md space-y-4 border border-gray-200">
                     <h3 className="text-lg font-medium">Create a Club</h3>
+                    {error && (
+                        <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm border border-red-100">
+                            {error}
+                        </div>
+                    )}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Club Name</label>
+                        <label className="block text-sm font-medium text-gray-700">Club Name <span className="text-red-500">*</span></label>
                         <input
                             type="text"
                             required
@@ -79,7 +91,7 @@ export default function ClubList({ userEmail }: { userEmail: string }) {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                        <label className="block text-sm font-medium text-gray-700">Description <span className="text-red-500">*</span></label>
                         <textarea
                             required
                             value={newClub.description}

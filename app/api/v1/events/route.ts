@@ -108,6 +108,11 @@ export async function GET(request: Request) {
                         skill_level: true,
                     },
                 },
+                _count: {
+                    select: {
+                        participants: true
+                    }
+                }
             },
         });
 

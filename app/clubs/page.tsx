@@ -1,12 +1,21 @@
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 import ClubList from '@/components/ClubList';
 
 export default async function ClubsPage() {
-    // Mock auth: get first user
-    const user = await prisma.user.findFirst();
+    const session = await auth();
+
+    if (!session?.user?.email) {
+        redirect('/api/auth/signin');
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
 
     if (!user) {
-        return <div>Please log in to view clubs.</div>;
+        return <div>User not found.</div>;
     }
 
     return (

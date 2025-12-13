@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { SignIn, CredentialsLogin } from '@/components/SignIn';
+import { CredentialsLogin } from '@/components/SignIn';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { DashboardEventList, DashboardClubList } from '@/components/DashboardLists';
+import HomeActionButtons from '@/components/HomeActionButtons';
 
 export default async function Home() {
   const session = await auth();
@@ -35,6 +36,11 @@ export default async function Home() {
           take: 5
         })
       ]);
+
+      // Serialize data to Plain Objects to valid "Decimal object" errors in Client Components
+      hostedEvents = JSON.parse(JSON.stringify(hostedEvents));
+      participatingEvents = JSON.parse(JSON.stringify(participatingEvents));
+      myClubs = JSON.parse(JSON.stringify(myClubs));
     }
   }
 
@@ -49,20 +55,7 @@ export default async function Home() {
           Organize events, manage RSVPs, and split costs effortlessly.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Link
-            href="/events"
-            className="px-8 py-4 bg-green-600 text-white rounded-full font-semibold text-lg hover:bg-green-700 transition shadow-lg"
-          >
-            Browse Events
-          </Link>
-          <Link
-            href="/clubs"
-            className="px-8 py-4 bg-white text-green-600 border-2 border-green-600 rounded-full font-semibold text-lg hover:bg-green-50 transition shadow-sm"
-          >
-            Explore Clubs
-          </Link>
-        </div>
+        <HomeActionButtons isLoggedIn={!!session} />
 
         {session ? (
           <div className="w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -72,7 +65,7 @@ export default async function Home() {
                 <p className="text-gray-500 mt-1">Here's what's happening with your activities.</p>
               </div>
               <div className="flex gap-3">
-                {((session?.user as any)?.is_super_admin || (session?.user as any)?.roles?.some((r: any) => r.name === 'System_Admin')) && (
+                {((session?.user as any)?.roles?.some((r: any) => r.name === 'System_Admin')) && (
                   <Link href="/admin" className="hidden sm:inline-flex px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition shadow-sm">
                     Go to Admin Panel
                   </Link>
@@ -114,7 +107,6 @@ export default async function Home() {
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 max-w-sm mx-auto">
             <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Login / Sign Up</h3>
             <div className="flex flex-col gap-3">
-              <SignIn />
               <CredentialsLogin />
               <div className="text-center text-sm pt-2">
                 <Link href="/register" className="text-blue-600 hover:text-blue-500">

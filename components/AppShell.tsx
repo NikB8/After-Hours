@@ -8,11 +8,17 @@ import { Menu } from 'lucide-react';
 import { useState } from 'react';
 
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const pathname = usePathname();
+    const { status } = useSession();
     const isAdmin = pathname?.startsWith('/admin');
+
+    const isRegisterPage = pathname === '/register';
+    const isLoginPage = pathname === '/' && status === 'unauthenticated';
+    const shouldShowSidebar = !isRegisterPage && !isLoginPage;
 
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -20,18 +26,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             {/* Mobile Header */}
             <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card">
-                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2">
-                    <Menu size={24} />
-                </button>
+                {shouldShowSidebar ? (
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2">
+                        <Menu size={24} />
+                    </button>
+                ) : (
+                    <div className="w-10"></div> /* Spacer to keep title centered if desired, or just nothing */
+                )}
                 <span className="font-bold text-lg">After Hours</span>
                 <ThemeToggle />
             </div>
 
             {/* Sidebar (Desktop) */}
-            <Sidebar />
+            {shouldShowSidebar && <Sidebar />}
 
             {/* Main Content */}
-            <div className="md:pl-64 flex flex-col min-h-screen">
+            <div className={`${shouldShowSidebar ? 'md:pl-64' : ''} flex flex-col min-h-screen`}>
                 {/* Desktop Header Actions */}
                 <div className="hidden md:flex justify-end p-4 items-center gap-4 absolute top-0 right-0 z-10 pointer-events-none">
                     <div className="pointer-events-auto">
