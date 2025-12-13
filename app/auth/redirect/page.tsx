@@ -11,7 +11,7 @@ export default async function AuthRedirectPage() {
     // Role-based routing logic
     const user = session.user as any;
     const roles = user.roles || [];
-    const isSuperAdmin = user.is_super_admin;
+    const isSuperAdmin = user?.is_super_admin;
     const hasAdminRole = roles.some((r: any) => r.name === 'System_Admin' || r.name === 'Corporate_Admin');
 
     if (isSuperAdmin || hasAdminRole) {

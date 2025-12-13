@@ -72,7 +72,7 @@ export default async function Home() {
                 <p className="text-gray-500 mt-1">Here's what's happening with your activities.</p>
               </div>
               <div className="flex gap-3">
-                {((session.user as any).is_super_admin || (session.user as any).roles?.some((r: any) => r.name === 'System_Admin')) && (
+                {((session?.user as any)?.is_super_admin || (session?.user as any)?.roles?.some((r: any) => r.name === 'System_Admin')) && (
                   <Link href="/admin" className="hidden sm:inline-flex px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition shadow-sm">
                     Go to Admin Panel
                   </Link>
