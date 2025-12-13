@@ -5,6 +5,10 @@ import RecommendationForm from '@/components/RecommendationForm';
 import CarpoolCoordinator from '@/components/CarpoolCoordinator';
 import TeamBuilder from '@/components/TeamBuilder';
 import ExpenseSettlement from '@/components/ExpenseSettlement';
+import ShareButtons from '@/components/ShareButtons';
+import ResponseBreakdown from '@/components/ResponseBreakdown';
+import EventLogisticsCard from '@/components/EventLogisticsCard';
+import PaymentDueCard from '@/components/PaymentDueCard';
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -42,8 +46,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Event Details Card */}
                 <div className="bg-white rounded-xl shadow-md overflow-hidden p-8">
-                    <div className="flex justify-between items-start">
-                        <div>
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                        <div className="flex-1">
                             <h1 className="text-3xl font-bold text-gray-900">{event.sport} Game</h1>
                             <p className="mt-2 text-gray-600 flex items-center">
                                 <span className="mr-2">📍</span>
@@ -52,10 +56,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                                 </a>
                             </p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${event.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                            {event.status}
-                        </span>
+                        <div className="flex items-center gap-3">
+                            <ShareButtons eventId={event.id} eventTitle={`${event.sport} on ${new Date(event.start_time).toLocaleDateString()}`} />
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${event.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {event.status}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -84,13 +91,36 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 {/* RSVP Action Card */}
                 {currentUser && (
                     <>
-                        <RsvpAction
-                            eventId={event.id}
-                            maxPlayers={event.max_players}
-                            confirmedCount={confirmedCount}
-                            userStatus={userStatus}
-                            userEmail={currentUser.email}
-                        />
+                        {/* Show Expense Tracking if Completed and Confirmed, else show RSVP */}
+                        {isCompleted && userStatus === 'Confirmed' ? (
+                            <PaymentDueCard
+                                eventId={event.id}
+                                userEmail={currentUser.email}
+                            />
+                        ) : (
+                            <RsvpAction
+                                eventId={event.id}
+                                maxPlayers={event.max_players}
+                                confirmedCount={confirmedCount}
+                                userStatus={userStatus}
+                                userEmail={currentUser.email}
+                            />
+                        )}
+
+                        {userStatus === 'Confirmed' && (
+                            <EventLogisticsCard
+                                eventId={event.id}
+                                userEmail={currentUser.email}
+                                userStatus={userStatus}
+                            />
+                        )}
+
+                        {isOrganizer && (
+                            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mt-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">📢 Response Breakdown</h3>
+                                <ResponseBreakdown eventId={event.id} />
+                            </div>
+                        )}
 
                         <RecommendationForm
                             eventId={event.id}

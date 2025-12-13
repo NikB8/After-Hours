@@ -7,7 +7,7 @@ type RsvpActionProps = {
     eventId: string;
     maxPlayers: number;
     confirmedCount: number;
-    userStatus: 'Confirmed' | 'Waitlist' | 'Declined' | 'None';
+    userStatus: 'Confirmed' | 'Waitlist' | 'Declined' | 'Maybe' | 'None';
     userEmail: string; // Mock auth
 };
 
@@ -23,44 +23,29 @@ export default function RsvpAction({
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
 
-    const handleJoin = async () => {
+    const handleUpdateStatus = async (newStatus: 'Confirmed' | 'Maybe' | 'Declined') => {
         setLoading(true);
         setMessage('');
         try {
             const res = await fetch(`/api/v1/events/${eventId}/rsvp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_email: userEmail }),
+                body: JSON.stringify({
+                    user_email: userEmail,
+                    status: newStatus
+                }),
             });
 
-            if (!res.ok) throw new Error('Failed to join');
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Failed to update status');
+            }
 
             const data = await res.json();
-            setStatus(data.status); // 'Confirmed' or 'Waitlist'
-            router.refresh(); // Refresh server components to update counts
-        } catch (error) {
-            setMessage('Error joining event');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleLeave = async () => {
-        setLoading(true);
-        setMessage('');
-        try {
-            const res = await fetch(`/api/v1/events/${eventId}/leave`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_email: userEmail }),
-            });
-
-            if (!res.ok) throw new Error('Failed to leave');
-
-            setStatus('Declined');
+            setStatus(data.status); // 'Confirmed' | 'Waitlist' | 'Maybe' | 'Declined'
             router.refresh();
-        } catch (error) {
-            setMessage('Error leaving event');
+        } catch (error: any) {
+            setMessage(error.message || 'Error updating status');
         } finally {
             setLoading(false);
         }
@@ -89,27 +74,42 @@ export default function RsvpAction({
                     </div>
                 )}
 
-                <div className="flex gap-3">
-                    {(status === 'None' || status === 'Declined') && (
-                        <button
-                            onClick={handleJoin}
-                            disabled={loading}
-                            className={`flex-1 py-2 px-4 rounded-md text-white font-medium transition-colors ${isFull ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-blue-600 hover:bg-blue-700'
-                                } disabled:opacity-50`}
-                        >
-                            {loading ? 'Processing...' : isFull ? 'Join Waitlist' : 'Join Game'}
-                        </button>
-                    )}
+                <div className="flex gap-2">
+                    {/* Yes Button */}
+                    <button
+                        onClick={() => handleUpdateStatus('Confirmed')}
+                        disabled={loading || (isFull && status !== 'Confirmed')}
+                        className={`flex-1 py-2 px-2 rounded-md font-medium transition-colors border ${status === 'Confirmed'
+                            ? 'bg-green-600 text-white border-green-600'
+                            : 'bg-white text-green-700 border-green-200 hover:bg-green-50'
+                            } disabled:opacity-50`}
+                    >
+                        {loading && status === 'Confirmed' ? '...' : (isFull && status !== 'Confirmed' ? 'Waitlist' : "Yes, I'm In!")}
+                    </button>
 
-                    {(status === 'Confirmed' || status === 'Waitlist') && (
-                        <button
-                            onClick={handleLeave}
-                            disabled={loading}
-                            className="flex-1 py-2 px-4 border border-red-300 text-red-700 rounded-md hover:bg-red-50 font-medium disabled:opacity-50"
-                        >
-                            {loading ? 'Processing...' : 'Leave Game'}
-                        </button>
-                    )}
+                    {/* Maybe Button */}
+                    <button
+                        onClick={() => handleUpdateStatus('Maybe')}
+                        disabled={loading}
+                        className={`flex-1 py-2 px-2 rounded-md font-medium transition-colors border ${status === 'Maybe'
+                            ? 'bg-yellow-500 text-white border-yellow-500'
+                            : 'bg-white text-yellow-600 border-yellow-200 hover:bg-yellow-50'
+                            } disabled:opacity-50`}
+                    >
+                        {loading && status === 'Maybe' ? '...' : 'Maybe'}
+                    </button>
+
+                    {/* No Button */}
+                    <button
+                        onClick={() => handleUpdateStatus('Declined')}
+                        disabled={loading}
+                        className={`flex-1 py-2 px-2 rounded-md font-medium transition-colors border ${status === 'Declined'
+                            ? 'bg-red-600 text-white border-red-600'
+                            : 'bg-white text-red-600 border-red-200 hover:bg-red-50'
+                            } disabled:opacity-50`}
+                    >
+                        {loading && status === 'Declined' ? '...' : "No, Can't"}
+                    </button>
                 </div>
 
                 {message && <p className="text-sm text-red-600 text-center">{message}</p>}

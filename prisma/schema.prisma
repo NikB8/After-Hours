@@ -3,24 +3,86 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id             String   @id @default(uuid())
+  name           String?
   email          String   @unique
+  emailVerified  DateTime?
+  password       String?  // Hashed password for Credentials provider
+  image          String?
+  // accounts/sessions moved below
+  
+  // Custom fields
   company_domain String? // Extracted from email, max 100
   skill_level    String   @default("Beginner") // Enum: Beginner, Intermediate, Advanced, Pro
   bio            String?
+  upi_id         String?  // New field for Organizer UPI
   is_super_admin Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  events         Event[]
-  participants   Participant[]
+  accounts      Account[]
+  sessions      Session[]
+  
+  // RBAC Fields
+  primary_company_id Int?
+  primary_company    Company? @relation("PrimaryCompany", fields: [primary_company_id], references: [id])
+  is_corporate_verified Boolean @default(false)
+  is_active        Boolean @default(true)
+  roles            UserRole[]
+
+  // Existing Relations
+  managedEvents Event[]       @relation("CreatedEvents")
+  participations Participant[]
+  referrals      Participant[] @relation("Referrals")
   recommendations Recommendation[]
-  created_clubs  Club[]
-  club_memberships ClubMember[]
+  createdClubs  Club[]
+  clubMemberships ClubMember[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Recommendation {
@@ -81,9 +143,13 @@ model ClubMember {
 model Event {
   id             String   @id @default(uuid())
   organizer_id   String
-  organizer      User     @relation(fields: [organizer_id], references: [id])
+  organizer      User     @relation("CreatedEvents", fields: [organizer_id], references: [id]) // Use named relation
   club_id        String?
   club           Club?    @relation(fields: [club_id], references: [id])
+  
+  company_id     Int?
+  company        Company? @relation(fields: [company_id], references: [id])
+  is_active      Boolean  @default(true) // Soft Delete
   sport          String
   start_time     DateTime
   end_time       DateTime
@@ -92,6 +158,9 @@ model Event {
   max_players    Int
   estimated_cost Decimal
   actual_cost    Decimal?
+  total_cost_final Decimal? // Organizer confirmed final cost
+  total_collected Decimal @default(0)
+  is_settled     Boolean  @default(false)
   status         String   @default("Draft") // Enum: Draft, Open, Booked, Completed, Canceled
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -110,15 +179,70 @@ model Participant {
   user      User     @relation(fields: [user_id], references: [id])
   status    String   @default("Declined") // Enum: Confirmed, Waitlist, Declined, Organizer
   is_paid   Boolean  @default(false)
+  payment_status String @default("Unpaid") // Enum: Unpaid, Pending_Confirmation, Paid
   amount_due Decimal  @default(0)
+  upi_transaction_id String?
   paid_by_id String?  // ID of the User who paid for this participant
   transport_mode String @default("Independent") // Enum: Independent, Driver, Rider
   car_seats      Int    @default(0)
   pickup_location String?
   assigned_driver_id String? // ID of the User who is driving this participant
   team_name      String?  // e.g. "Red", "Blue", "Team A"
+  
+  referred_by_id String?
+  referred_by    User?    @relation("Referrals", fields: [referred_by_id], references: [id])
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([event_id, user_id])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  admin_email String
+  action      String   // e.g. "OVERRIDE_PAYMENT", "CANCEL_EVENT"
+  target      String   // e.g. "Participant: 123", "Event: 456"
+  details     Json?
+  createdAt   DateTime @default(now())
+}
+
+model GlobalSettings {
+  key        String   @id
+  value      String
+  is_active  Boolean  @default(true)
+  updatedAt  DateTime @updatedAt
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique // System_Admin, Corporate_Admin, Organizer, Player, Guest
+  description String?    
+  users       UserRole[]
+}
+
+model Company {
+  id          Int        @id @default(autoincrement())
+  domain_name String     @unique
+  is_active   Boolean    @default(true)
+  
+  users       User[]     @relation("PrimaryCompany")
+  user_roles  UserRole[]
+  events      Event[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model UserRole {
+  id         Int     @id @default(autoincrement())
+  user_id    String
+  user       User    @relation(fields: [user_id], references: [id])
+  role_id    Int
+  role       Role    @relation(fields: [role_id], references: [id])
+  company_id Int?
+  company    Company? @relation(fields: [company_id], references: [id])
+
+  createdAt  DateTime @default(now())
+
+  @@unique([user_id, role_id, company_id])
 }

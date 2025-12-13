@@ -7,6 +7,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showCustomSport, setShowCustomSport] = useState(false);
 
     const [formData, setFormData] = useState({
         sport: 'Badminton',
@@ -77,19 +78,53 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
             )}
 
             <div>
-                <label className="form-label">Sport</label>
-                <select
-                    name="sport"
-                    value={formData.sport}
-                    onChange={handleChange}
-                    className="form-select"
-                >
-                    <option value="Badminton">Badminton</option>
-                    <option value="Football">Football</option>
-                    <option value="Basketball">Basketball</option>
-                    <option value="Tennis">Tennis</option>
-                    <option value="Cricket">Cricket</option>
-                </select>
+                <label className="form-label">Sport / Activity</label>
+                {showCustomSport ? (
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            name="sport"
+                            autoFocus
+                            placeholder="Enter activity name (e.g. Hiking, Board Games)"
+                            value={formData.sport}
+                            onChange={handleChange}
+                            className="form-input flex-1"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowCustomSport(false);
+                                setFormData(prev => ({ ...prev, sport: 'Badminton' }));
+                            }}
+                            className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                        >
+                            Select from list
+                        </button>
+                    </div>
+                ) : (
+                    <select
+                        name="sport"
+                        value={formData.sport}
+                        onChange={(e) => {
+                            if (e.target.value === 'Other') {
+                                setShowCustomSport(true);
+                                setFormData(prev => ({ ...prev, sport: '' }));
+                            } else {
+                                handleChange(e);
+                            }
+                        }}
+                        className="form-select"
+                    >
+                        <option value="Badminton">Badminton</option>
+                        <option value="Football">Football</option>
+                        <option value="Basketball">Basketball</option>
+                        <option value="Tennis">Tennis</option>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Pickleball">Pickleball</option>
+                        <option value="Other">Other</option>
+                    </select>
+                )}
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">

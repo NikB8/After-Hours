@@ -30,8 +30,8 @@ export default function Sidebar() {
                                     key={item.name}
                                     href={item.href}
                                     className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                                         }`}
                                 >
                                     <item.icon
@@ -46,18 +46,40 @@ export default function Sidebar() {
                     </nav>
                 </div>
                 <div className="flex-shrink-0 flex border-t border-border p-4">
-                    <button className="flex-shrink-0 w-full group block">
-                        <div className="flex items-center">
-                            <div className="ml-3">
-                                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                                    Sign Out
-                                </p>
-                            </div>
-                            <LogOut className="ml-auto h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                    </button>
+                    <UserProfile />
                 </div>
             </div>
+        </div>
+    );
+}
+
+import { useSession, signOut } from "next-auth/react";
+
+function UserProfile() {
+    const { data: session } = useSession();
+
+    if (!session?.user) return null;
+
+    return (
+        <div className="flex items-center w-full gap-3">
+            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                {session.user.name?.[0] || session.user.email?.[0]?.toUpperCase() || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                    {session.user.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                    {session.user.email}
+                </p>
+            </div>
+            <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="p-2 text-muted-foreground hover:text-red-500 transition-colors rounded-full hover:bg-red-50"
+                title="Sign Out"
+            >
+                <LogOut size={20} />
+            </button>
         </div>
     );
 }

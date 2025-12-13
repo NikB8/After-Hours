@@ -26,7 +26,7 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
         try {
             // Re-using logistics endpoint again as it has participant data
             // Ideally we'd have a dedicated endpoint or include this in the main event fetch
-            const res = await fetch(`/ api / v1 / events / ${eventId}/logistics`);
+            const res = await fetch(`/api/v1/events/${eventId}/logistics`);
             const data = await res.json();
             const all = [...data.drivers, ...data.riders, ...data.independent];
             // Deduplicate

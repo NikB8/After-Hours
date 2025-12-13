@@ -1,0 +1,41 @@
+
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
+
+export async function POST(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id: eventId } = await params;
+        const body = await request.json();
+        const { user_email } = body;
+
+        // AUTHENTICATION: Check for valid session
+        const session = await auth();
+        if (!session || !session.user || !session.user.email) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Find user by session email
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+        await prisma.participant.updateMany({
+            where: {
+                event_id: eventId,
+                user_id: user.id
+            },
+            data: {
+                payment_status: 'Pending_Confirmation'
+            }
+        });
+
+        return NextResponse.json({ success: true, status: 'Pending_Confirmation' });
+
+    } catch (error) {
+        console.error('Error notifying payment:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

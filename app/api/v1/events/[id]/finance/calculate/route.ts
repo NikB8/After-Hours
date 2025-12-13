@@ -34,7 +34,7 @@ export async function POST(
         const participants = await prisma.participant.findMany({
             where: {
                 event_id: eventId,
-                status: 'Confirmed',
+                status: { in: ['Confirmed', 'Organizer'] }
             },
         });
 
@@ -53,7 +53,7 @@ export async function POST(
             prisma.participant.updateMany({
                 where: {
                     event_id: eventId,
-                    status: 'Confirmed',
+                    status: { in: ['Confirmed', 'Organizer'] },
                 },
                 data: { amount_due: costPerPerson },
             }),

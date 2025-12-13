@@ -8,6 +8,16 @@ export async function GET(
     try {
         const { id: eventId } = await params;
 
+        // Fetch event details for location
+        const event = await prisma.event.findUnique({
+            where: { id: eventId },
+            select: { venue_name: true, map_link: true }
+        });
+
+        if (!event) {
+            return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+        }
+
         const participants = await prisma.participant.findMany({
             where: {
                 event_id: eventId,
@@ -17,7 +27,9 @@ export async function GET(
                 user: {
                     select: {
                         id: true,
+                        name: true, // Added name for UI
                         email: true,
+                        image: true, // Added image for UI
                     },
                 },
             },
@@ -43,6 +55,8 @@ export async function GET(
 
         const enhanceParticipant = (p: any) => ({
             ...p,
+            user_name: p.user.name || p.user.email, // Convenient field for UI
+            user_image: p.user.image,
             assigned_driver_email: getDriverEmail(p.assigned_driver_id),
             paid_by_email: getPayerEmail(p.paid_by_id)
         });
@@ -52,6 +66,8 @@ export async function GET(
         const independent = participants.filter((p) => p.transport_mode === 'Independent').map(enhanceParticipant);
 
         return NextResponse.json({
+            venue_name: event.venue_name,
+            map_link: event.map_link,
             drivers,
             riders,
             independent,

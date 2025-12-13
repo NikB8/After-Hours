@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
 
 export async function POST(request: Request) {
     try {
@@ -15,38 +16,78 @@ export async function POST(request: Request) {
             organizer_email // Mock auth
         } = body;
 
-        // Basic validation
-        if (!sport || !start_time || !end_time || !venue_name || !map_link || !max_players || !estimated_cost) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        // AUTHENTICATION
+        const session = await auth();
+        if (!session || !session.user || !session.user.email) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Mock auth: find user by email or use first user
-        let organizer;
-        if (organizer_email) {
-            organizer = await prisma.user.findUnique({ where: { email: organizer_email } });
-        } else {
-            organizer = await prisma.user.findFirst();
-        }
+        const organizer = await prisma.user.findUnique({ where: { email: session.user.email } });
 
         if (!organizer) {
             return NextResponse.json({ error: 'Organizer not found' }, { status: 404 });
         }
 
-        const event = await prisma.event.create({
-            data: {
-                organizer_id: organizer.id,
-                sport,
-                start_time: new Date(start_time),
-                end_time: new Date(end_time),
-                venue_name,
-                map_link,
-                max_players: parseInt(max_players),
-                estimated_cost: parseFloat(estimated_cost),
-                status: 'Draft', // Default status
-            },
+        // Basic validation
+        if (!sport || !start_time || !end_time || !venue_name || !map_link || !max_players || !estimated_cost) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // 3. Create Event & Assign Role (if needed)
+        const event = await prisma.$transaction(async (tx: any) => {
+            const newEvent = await tx.event.create({
+                data: {
+                    organizer_id: session.user.id,
+                    company_id: (session.user as any).primary_company_id || null, // Assuming fetched in session or available via user lookup
+                    sport: body.sport,
+                    start_time: new Date(body.start_time),
+                    end_time: new Date(body.end_time),
+                    venue_name: body.venue_name,
+                    map_link: body.map_link,
+                    max_players: body.max_players,
+                    estimated_cost: body.estimated_cost,
+                    club_id: body.club_id || null,
+                    status: 'Draft', // Default status
+                }
+            });
+
+            // 4. Dynamic Organizer Role Assignment
+            // Check if user already has 'Organizer' role
+            const hasOrganizerRole = await tx.userRole.findFirst({
+                where: {
+                    user_id: session.user.id,
+                    role: { name: 'Organizer' }
+                }
+            });
+
+            if (!hasOrganizerRole) {
+                const organizerRole = await tx.role.findUnique({ where: { name: 'Organizer' } });
+                if (organizerRole) {
+                    await tx.userRole.create({
+                        data: {
+                            user_id: session.user.id,
+                            role_id: organizerRole.id,
+                            company_id: (session.user as any).primary_company_id || null
+                        }
+                    });
+                }
+            }
+
+            return newEvent;
         });
 
-        return NextResponse.json(event, { status: 201 });
+        // 5. Add Organizer as Participant (Confirmed)
+        await prisma.participant.create({
+            data: {
+                event_id: event.id,
+                user_id: session.user.id,
+                status: 'Organizer',
+                is_paid: true, // Organizer handles money, effectively paid/exempt
+                payment_status: 'Paid'
+            }
+        });
+
+        return NextResponse.json({ id: event.id }, { status: 201 });
     } catch (error) {
         console.error('Error creating event:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

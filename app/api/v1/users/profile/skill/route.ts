@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
 
 export async function PUT(request: Request) {
     try {
@@ -12,25 +13,13 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Invalid skill level' }, { status: 400 });
         }
 
-        // Mock auth: we expect email to be passed for now, or we'll find the first user
-        // In production, use session.user.email
-        let user;
-        if (email) {
-            user = await prisma.user.findUnique({ where: { email } });
-        } else {
-            // For demo purposes, if no email provided, update the first user found or create one
-            user = await prisma.user.findFirst();
-            if (!user) {
-                // Create a dummy user for testing if none exists
-                user = await prisma.user.create({
-                    data: {
-                        email: 'test@example.com',
-                        company_domain: 'example.com',
-                        skill_level: 'Beginner'
-                    }
-                });
-            }
+        // AUTHENTICATION
+        const session = await auth();
+        if (!session || !session.user || !session.user.email) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
