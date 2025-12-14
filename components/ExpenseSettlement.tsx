@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 
 type Participant = {
     id: string;
+    user_id: string; // Add user_id to type
     user: { email: string };
     amount_due: number;
     is_paid: boolean;
     paid_by_email?: string;
 };
 
-export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: { eventId: string; userEmail: string; isOrganizer: boolean }) {
+export default function ExpenseSettlement({ eventId, userEmail, userId, isOrganizer }: { eventId: string; userEmail: string; userId: string; isOrganizer: boolean }) {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loading, setLoading] = useState(true);
     const [actualCost, setActualCost] = useState<string>('');
@@ -24,14 +25,21 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
 
     const fetchParticipants = async () => {
         try {
-            // Re-using logistics endpoint again as it has participant data
-            // Ideally we'd have a dedicated endpoint or include this in the main event fetch
-            const res = await fetch(`/api/v1/events/${eventId}/logistics`);
+            const res = await fetch(`/api/v1/events/${eventId}/finance/status`);
             const data = await res.json();
-            const all = [...data.drivers, ...data.riders, ...data.independent];
-            // Deduplicate
-            const unique = Array.from(new Map(all.map((p: any) => [p.id, p])).values()) as Participant[];
-            setParticipants(unique);
+
+            if (data.participants && Array.isArray(data.participants)) {
+                setParticipants(data.participants);
+                if (data.event?.actual_cost) {
+                    setActualCost(data.event.actual_cost.toString());
+                }
+            } else if (Array.isArray(data)) {
+                // Fallback for old API response format just in case
+                setParticipants(data);
+            } else {
+                console.error('Failed to load participants:', data);
+                setParticipants([]);
+            }
         } catch (error) {
             console.error('Error fetching participants:', error);
         } finally {
@@ -88,7 +96,8 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
 
     if (loading) return <div className="animate-pulse h-32 bg-gray-100 rounded-xl"></div>;
 
-    const myParticipant = participants.find((p) => p.user.email === userEmail);
+    // Robust finding: match by ID if available (preferred), else fallback to email
+    const myParticipant = participants.find((p) => p.user_id === userId || p.user.email === userEmail);
 
     // Calculate Totals
     const totalDue = participants.reduce((sum, p) => sum + Number(p.amount_due), 0);
@@ -96,36 +105,20 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
     const remaining = totalDue - totalCollected;
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Expense Settlement</h3>
+        <div className="bg-card p-6 rounded-xl shadow-md border border-border mt-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">💰 Expense Settlement</h3>
 
             {isOrganizer ? (
                 <div className="space-y-6">
-                    {/* Summary Stats */}
-                    <div className="grid grid-cols-3 gap-4 text-center mb-6">
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                            <div className="text-xs text-gray-500 uppercase font-semibold">Total Cost</div>
-                            <div className="text-lg font-bold text-gray-900">₹{totalDue.toFixed(2)}</div>
-                        </div>
-                        <div className="bg-green-50 p-3 rounded-lg">
-                            <div className="text-xs text-green-600 uppercase font-semibold">Collected</div>
-                            <div className="text-lg font-bold text-green-700">₹{totalCollected.toFixed(2)}</div>
-                        </div>
-                        <div className="bg-red-50 p-3 rounded-lg">
-                            <div className="text-xs text-red-600 uppercase font-semibold">Remaining</div>
-                            <div className="text-lg font-bold text-red-700">₹{remaining.toFixed(2)}</div>
-                        </div>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Set Actual Cost</label>
+                    <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                        <label className="block text-sm font-medium text-foreground mb-2">Set Actual Cost</label>
                         <div className="flex gap-2">
                             <input
                                 type="number"
                                 value={actualCost}
                                 onChange={(e) => setActualCost(e.target.value)}
                                 placeholder="0.00"
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+                                className="block w-full rounded-md border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border"
                             />
                             <button
                                 onClick={handleCalculate}
@@ -138,13 +131,13 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                     </div>
 
                     <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Payment Status</h4>
-                        <ul className="divide-y divide-gray-100">
+                        <h4 className="font-medium text-foreground mb-2">Payment Status</h4>
+                        <ul className="divide-y divide-border">
                             {participants.map((p) => (
                                 <li key={p.id} className="py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
-                                        <span className="text-sm font-medium text-gray-900">{p.user.email}</span>
-                                        <div className="text-xs text-gray-500">Due: ₹{Number(p.amount_due).toFixed(2)}</div>
+                                        <span className="text-sm font-medium text-foreground">{p.user.email}</span>
+                                        <div className="text-xs text-muted-foreground">Due: ₹{Number(p.amount_due).toFixed(2)}</div>
                                         {p.is_paid && p.paid_by_email && p.paid_by_email !== p.user.email && (
                                             <div className="text-xs text-blue-600">Paid by {p.paid_by_email}</div>
                                         )}
@@ -153,7 +146,7 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                                     {payingFor === p.id ? (
                                         <div className="flex gap-2 items-center">
                                             <select
-                                                className="text-xs border rounded p-1"
+                                                className="text-xs border border-input rounded p-1 bg-background text-foreground"
                                                 value={proxyEmail}
                                                 onChange={(e) => setProxyEmail(e.target.value)}
                                             >
@@ -186,8 +179,8 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                                                 }
                                             }}
                                             className={`px-3 py-1 rounded-full text-xs font-medium ${p.is_paid
-                                                ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                                                : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
                                                 }`}
                                         >
                                             {p.is_paid ? 'Paid' : 'Mark Paid'}
@@ -202,22 +195,22 @@ export default function ExpenseSettlement({ eventId, userEmail, isOrganizer }: {
                 <div className="text-center py-6">
                     {myParticipant ? (
                         <div>
-                            <div className="text-sm text-gray-500 mb-1">Your Share</div>
-                            <div className="text-3xl font-bold text-gray-900 mb-4">₹{Number(myParticipant.amount_due).toFixed(2)}</div>
+                            <div className="text-sm text-muted-foreground mb-1">Your Share</div>
+                            <div className="text-3xl font-bold text-foreground mb-4">₹{Number(myParticipant.amount_due).toFixed(2)}</div>
                             <span
                                 className={`px-4 py-2 rounded-full text-sm font-medium ${myParticipant.is_paid
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800'
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
                                     }`}
                             >
                                 {myParticipant.is_paid ? '✅ Paid' : '⏳ Payment Pending'}
                             </span>
                             {!myParticipant.is_paid && Number(myParticipant.amount_due) > 0 && (
-                                <p className="mt-4 text-xs text-gray-500">Please pay the organizer directly.</p>
+                                <p className="mt-4 text-xs text-muted-foreground">Please pay the organizer directly.</p>
                             )}
                         </div>
                     ) : (
-                        <p className="text-gray-500">You are not a participant in this event.</p>
+                        <p className="text-muted-foreground">You are not a participant in this event.</p>
                     )}
                 </div>
             )}

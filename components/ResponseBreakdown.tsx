@@ -52,10 +52,10 @@ export default function ResponseBreakdown({ eventId }: { eventId: string }) {
     if (!data) return <div className="text-sm text-red-500">Failed to load data.</div>;
 
     const sections = [
-        { key: 'Confirmed', label: '✅ Confirmed', count: data.counts.Confirmed + data.counts.Organizer, color: 'text-green-700 bg-green-50' },
-        { key: 'Maybe', label: '🤔 Maybe', count: data.counts.Maybe, color: 'text-yellow-700 bg-yellow-50' },
-        { key: 'Declined', label: '❌ Declined', count: data.counts.Declined, color: 'text-red-700 bg-red-50' },
-        { key: 'Waitlist', label: '⏳ Waitlist', count: data.counts.Waitlist, color: 'text-orange-700 bg-orange-50' },
+        { key: 'Confirmed', label: '✅ Confirmed', count: data.counts.Confirmed + data.counts.Organizer, color: 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30' },
+        { key: 'Maybe', label: '🤔 Maybe', count: data.counts.Maybe, color: 'text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30' },
+        { key: 'Declined', label: '❌ Declined', count: data.counts.Declined, color: 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30' },
+        { key: 'Waitlist', label: '⏳ Waitlist', count: data.counts.Waitlist, color: 'text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30' },
     ];
 
     return (
@@ -101,16 +101,16 @@ function CollapsibleList({ title, users }: { title: string, users: User[] }) {
         <div className="border rounded-md overflow-hidden">
             <button
                 onClick={() => setOpen(!open)}
-                className="w-full flex justify-between items-center p-3 bg-gray-50 text-sm font-medium hover:bg-gray-100"
+                className="w-full flex justify-between items-center p-3 bg-muted/50 text-sm font-medium hover:bg-muted text-foreground"
             >
                 <span>{title} ({users.length})</span>
                 <span>{open ? '▲' : '▼'}</span>
             </button>
             {open && (
-                <ul className="divide-y divide-gray-100 bg-white p-2">
+                <ul className="divide-y divide-border bg-card p-2">
                     {users.map((u, idx) => (
-                        <li key={idx} className="py-2 px-2 text-sm text-gray-700 flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold overflow-hidden">
+                        <li key={idx} className="py-2 px-2 text-sm text-foreground flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold overflow-hidden text-muted-foreground">
                                 {u.image ? <img src={u.image} alt={u.name || ''} /> : (u.name?.[0] || u.email[0]).toUpperCase()}
                             </div>
                             <span>{u.name || u.email}</span>

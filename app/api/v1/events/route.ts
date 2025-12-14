@@ -60,7 +60,9 @@ export async function POST(request: Request) {
                     user_id: userId,
                     status: 'Confirmed',
                     is_paid: true,
-                    payment_status: 'Paid'
+                    payment_status: 'Paid',
+                    transport_mode: body.transport_mode || 'Independent',
+                    car_seats: body.transport_mode === 'Driver' ? (parseInt(str(body.car_seats)) || 0) : 0
                 }
             });
 

@@ -9,7 +9,7 @@ async function main() {
         create: {
             email,
             company_domain: 'example.com',
-            skill_level: 'Advanced',
+
             bio: 'Founder',
             is_super_admin: true
         },

@@ -2,13 +2,12 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import RsvpAction from '@/components/RsvpAction';
 import RecommendationForm from '@/components/RecommendationForm';
-import CarpoolCoordinator from '@/components/CarpoolCoordinator';
 import TeamBuilder from '@/components/TeamBuilder';
 import ExpenseSettlement from '@/components/ExpenseSettlement';
-import ShareButtons from '@/components/ShareButtons';
 import ResponseBreakdown from '@/components/ResponseBreakdown';
-import EventLogisticsCard from '@/components/EventLogisticsCard';
+import TransportCoordination from '@/components/TransportCoordination';
 import PaymentDueCard from '@/components/PaymentDueCard';
+import EventInfoCard from '@/components/EventInfoCard';
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -44,52 +43,20 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     const isCreator = isOrganizer; // Alias for consistency if needed, checking usages
     const isSuperAdmin = false; // Placeholder if variable is used in JSX template
 
+    // Serialize Decimal fields to numbers/strings to pass to Client Component
+    const serializedEvent = {
+        ...event,
+        estimated_cost: event.estimated_cost ? Number(event.estimated_cost) : 0,
+        actual_cost: event.actual_cost ? Number(event.actual_cost) : 0,
+        total_cost_final: event.total_cost_final ? Number(event.total_cost_final) : 0,
+        total_collected: event.total_collected ? Number(event.total_collected) : 0,
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Event Details Card */}
-                <div className="bg-white rounded-xl shadow-md overflow-hidden p-8">
-                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                        <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900">{event.sport} Game</h1>
-                            <p className="mt-2 text-gray-600 flex items-center">
-                                <span className="mr-2">📍</span>
-                                <a href={event.map_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                    {event.venue_name}
-                                </a>
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <ShareButtons eventId={event.id} eventTitle={`${event.sport} on ${new Date(event.start_time).toLocaleDateString()}`} />
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${event.status === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {event.status}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500">Time</h3>
-                                <p className="mt-1 text-lg text-gray-900">
-                                    {new Date(event.start_time).toLocaleString()}
-                                </p>
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500">Organizer</h3>
-                                <p className="mt-1 text-lg text-gray-900">{event.organizer.email}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="text-sm font-medium text-gray-500">Cost</h3>
-                                <p className="mt-1 text-lg text-gray-900">₹{event.estimated_cost.toString()}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <EventInfoCard event={serializedEvent} />
 
                 {/* RSVP Action Card */}
                 {currentUser && (
@@ -111,10 +78,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                         )}
 
                         {userStatus === 'Confirmed' && (
-                            <EventLogisticsCard
+                            <TransportCoordination
                                 eventId={event.id}
-                                userEmail={currentUser.email}
-                                userStatus={userStatus}
                             />
                         )}
 
@@ -130,20 +95,17 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                             userEmail={currentUser.email}
                         />
 
-                        <CarpoolCoordinator
-                            eventId={event.id}
-                            userEmail={currentUser.email}
-                        />
-
                         <TeamBuilder
                             eventId={event.id}
                             userEmail={currentUser.email}
+                            userId={currentUser.id}
                             isOrganizer={isOrganizer}
                         />
 
                         <ExpenseSettlement
                             eventId={event.id}
                             userEmail={currentUser.email}
+                            userId={currentUser.id}
                             isOrganizer={isOrganizer}
                         />
                     </>

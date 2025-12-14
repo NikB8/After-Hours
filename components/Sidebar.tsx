@@ -16,7 +16,7 @@ export default function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-50 bg-card border-r border-border">
+        <div className="flex flex-col h-full bg-card border-r border-border">
             <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
                 <div className="flex items-center flex-shrink-0 px-4 mb-8">
                     <h1 className="text-2xl font-bold text-primary">After Hours</h1>

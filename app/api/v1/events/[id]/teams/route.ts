@@ -1,5 +1,49 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
+
+export async function GET(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id: eventId } = await params;
+        const session = await auth();
+
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Fetch confirmed participants
+        const participants = await prisma.participant.findMany({
+            where: {
+                event_id: eventId,
+                status: 'Confirmed'
+            },
+            select: {
+                id: true,
+                user_id: true,
+                team_name: true,
+                user: {
+                    select: {
+                        email: true,
+                        name: true
+                    }
+                }
+            }
+        });
+
+        // Basic Access Control: User must be in the list or be the Organizer
+        // (For simplicity allowing any authenticated user to see teams if they know the ID, 
+        // effectively assumes public/shared event visibility for participants)
+
+        return NextResponse.json(participants);
+
+    } catch (error) {
+        console.error('Error fetching teams:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
 
 export async function PUT(
     request: Request,

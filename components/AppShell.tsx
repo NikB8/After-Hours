@@ -10,8 +10,20 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
+import SmartInstallBanner from './SmartInstallBanner';
+import { useEffect } from 'react';
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Register Service Worker
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW registration failed', err));
+        }
+    }, []);
+
+    // ... existing logic ...
     const pathname = usePathname();
     const { status } = useSession();
     const isAdmin = pathname?.startsWith('/admin');
@@ -22,6 +34,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+            <SmartInstallBanner />
             {/* Banner Removed */}
 
             {/* Mobile Header */}
@@ -38,7 +51,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Sidebar (Desktop) */}
-            {shouldShowSidebar && <Sidebar />}
+            {shouldShowSidebar && (
+                <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-50">
+                    <Sidebar />
+                </div>
+            )}
 
             {/* Main Content */}
             <div className={`${shouldShowSidebar ? 'md:pl-64' : ''} flex flex-col min-h-screen`}>

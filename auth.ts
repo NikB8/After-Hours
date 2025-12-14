@@ -20,12 +20,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const email = credentials?.email as string;
                 const password = credentials?.password as string;
 
-                if (!email || !password) return null;
+                console.log("DEBUG: authorize called with", { email, password });
+
+                if (!email || !password) {
+                    console.log("DEBUG: Missing email or password");
+                    return null;
+                }
 
                 const user = await prisma.user.findUnique({ where: { email } }) as any;
 
                 // If user doesn't exist or has no password (e.g. Google-only user tried password login)
                 if (!user || !user.password) {
+                    console.log("DEBUG: User not found or no password", user ? user.email : "No user");
                     return null;
                 }
 
@@ -37,9 +43,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const isValid = await bcrypt.compare(password, user.password);
 
                 if (isValid) {
+                    console.log("DEBUG: Password valid for", user.email);
                     return user;
                 }
 
+                console.log("DEBUG: Invalid password for", user.email);
                 return null;
             }
         })

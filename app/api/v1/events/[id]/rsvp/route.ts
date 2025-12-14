@@ -8,7 +8,7 @@ export async function POST(
     try {
         const { id: eventId } = await params;
         const body = await request.json();
-        const { user_email, status, referred_by_id } = body; // Mock auth
+        const { user_email, status, referred_by_id, transport_mode, car_seats } = body; // Mock auth
 
         if (!user_email) {
             return NextResponse.json({ error: 'User email required' }, { status: 400 });
@@ -17,6 +17,16 @@ export async function POST(
         const validStatuses = ['Confirmed', 'Declined', 'Maybe'];
         if (status && !validStatuses.includes(status)) {
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+        }
+
+        // TRANSPORT VALIDATION
+        if (status === 'Confirmed') {
+            if (!transport_mode) {
+                return NextResponse.json({ error: 'Transport mode is mandatory for confirmed RSVPs' }, { status: 400 });
+            }
+            if (transport_mode === 'Driver' && (!car_seats || car_seats <= 0)) {
+                return NextResponse.json({ error: 'Car seats must be greater than 0 for drivers' }, { status: 400 });
+            }
         }
 
         // Mock auth: find user
@@ -56,13 +66,9 @@ export async function POST(
 
             // If no explicit status provided, default to toggling logic (legacy support or simple join)
             if (!newStatus) {
-                // If they are already joined/waitlisted, assume no change needed or error?
-                // Let's assume this endpoint is now STRICTLY for setting status if 'status' field is passed.
-                // If 'status' is NOT passed, fall back to "Join" behavior -> Confirmed/Waitlist
                 const confirmedCount = event.participants.length;
                 newStatus = confirmedCount < event.max_players ? 'Confirmed' : 'Waitlist';
             } else if (newStatus === 'Confirmed') {
-                // Check capacity only if upgrading to Confirmed
                 const isAlreadyConfirmed = existingParticipant && existingParticipant.status === 'Confirmed';
                 if (!isAlreadyConfirmed) {
                     const confirmedCount = event.participants.length;
@@ -71,14 +77,29 @@ export async function POST(
                     }
                 }
             }
-            // 'Maybe' and 'Declined' always allowed (no capacity check)
+
+            // Enforce Transport Logic only if final status is 'Confirmed'
+            // If they got bumped to Waitlist, we might relax checking, or still save it.
+            // Requirement says "If incoming payload sets status: 'Confirmed' ... request MUST also include..."
+            // We already validated strictly above.
+
+            const participationData = {
+                status: newStatus,
+                transport_mode: newStatus === 'Confirmed' ? transport_mode : existingParticipant?.transport_mode, // Keep old if not confirmed update? Or update if provided?
+                car_seats: newStatus === 'Confirmed' && transport_mode === 'Driver' ? car_seats : (existingParticipant?.car_seats || 0),
+            };
 
             // 4. Create or Update participant
             if (existingParticipant) {
-                // We typically don't update referrer if they already exist, only on creation.
                 return await tx.participant.update({
                     where: { id: existingParticipant.id },
-                    data: { status: newStatus },
+                    data: {
+                        status: newStatus,
+                        ...(newStatus === 'Confirmed' ? {
+                            transport_mode,
+                            car_seats: transport_mode === 'Driver' ? car_seats : 0
+                        } : {})
+                    },
                 });
             } else {
                 return await tx.participant.create({
@@ -86,7 +107,9 @@ export async function POST(
                         event_id: eventId,
                         user_id: user.id,
                         status: newStatus,
-                        referred_by_id: referred_by_id || null
+                        referred_by_id: referred_by_id || null,
+                        transport_mode: transport_mode || 'Independent',
+                        car_seats: transport_mode === 'Driver' ? car_seats : 0
                     },
                 });
             }

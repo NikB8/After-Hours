@@ -49,39 +49,39 @@ export default function RolesPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Role Definitions</h1>
-                    <p className="text-gray-500">Define roles available for assignment in the system.</p>
+                    <h1 className="text-2xl font-bold text-foreground">Role Definitions</h1>
+                    <p className="text-muted-foreground">Define roles available for assignment in the system.</p>
                 </div>
                 <button
                     onClick={() => setIsCreating(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-sm"
                 >
                     <Plus className="w-4 h-4" /> Create Role
                 </button>
             </div>
 
             {isCreating && (
-                <div className="p-6 bg-white border border-blue-100 rounded-xl shadow-lg ring-1 ring-blue-500 text-left">
-                    <h3 className="text-lg font-semibold mb-4">Define new Role</h3>
+                <div className="p-6 bg-card border border-border rounded-xl shadow-lg ring-1 ring-border text-left">
+                    <h3 className="text-lg font-semibold mb-4 text-foreground">Define new Role</h3>
                     <form onSubmit={handleCreate} className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2">
                             <input
                                 autoFocus
                                 placeholder="Role Name (e.g. Moderator)"
-                                className="border p-2 rounded-lg w-full"
+                                className="border border-border bg-background text-foreground p-2 rounded-lg w-full"
                                 value={newRoleData.name}
                                 onChange={e => setNewRoleData({ ...newRoleData, name: e.target.value })}
                             />
                             <input
                                 placeholder="Description (Optional)"
-                                className="border p-2 rounded-lg w-full"
+                                className="border border-border bg-background text-foreground p-2 rounded-lg w-full"
                                 value={newRoleData.description}
                                 onChange={e => setNewRoleData({ ...newRoleData, description: e.target.value })}
                             />
                         </div>
                         <div className="flex gap-2 justify-end">
-                            <button type="button" onClick={() => setIsCreating(false)} className="px-5 py-2 bg-gray-100 text-gray-600 rounded-lg">Cancel</button>
-                            <button type="submit" className="px-5 py-2 bg-blue-600 text-white rounded-lg">Save</button>
+                            <button type="button" onClick={() => setIsCreating(false)} className="px-5 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80">Cancel</button>
+                            <button type="submit" className="px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">Save</button>
                         </div>
                     </form>
                 </div>
@@ -89,16 +89,16 @@ export default function RolesPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {roles.map(role => (
-                    <div key={role.id} className="bg-white p-6 rounded-xl border shadow-sm flex items-start gap-4 hover:shadow-md transition">
-                        <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
+                    <div key={role.id} className="bg-card p-6 rounded-xl border border-border shadow-sm flex items-start gap-4 hover:shadow-md transition">
+                        <div className="p-3 rounded-lg bg-primary/10 text-primary">
                             <Key className="w-6 h-6" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">{role.name}</h3>
-                            <p className="text-sm text-gray-500 mt-1">ID: {role.id}</p>
-                            {role.description && <p className="text-sm text-gray-600 mt-2 italic">"{role.description}"</p>}
+                            <h3 className="font-bold text-foreground">{role.name}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">ID: {role.id}</p>
+                            {role.description && <p className="text-sm text-muted-foreground mt-2 italic">"{role.description}"</p>}
                             <div className="mt-3 flex gap-2">
-                                <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">Global</span>
+                                <span className="text-xs px-2 py-1 bg-muted rounded text-muted-foreground">Global</span>
                             </div>
                         </div>
                     </div>

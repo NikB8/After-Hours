@@ -54,8 +54,8 @@ export default function AdminDashboard() {
     }, []);
 
     return (
-        <div className="p-8 space-y-8 bg-gray-50 min-h-screen">
-            <h1 className="text-3xl font-bold text-gray-800">System Health & Monitoring</h1>
+        <div className="p-8 space-y-8 bg-background min-h-screen">
+            <h1 className="text-3xl font-bold text-foreground">System Health & Monitoring</h1>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -94,20 +94,20 @@ export default function AdminDashboard() {
 
             {/* Financial Summary Text */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-xl shadow-sm border">
-                    <p className="text-sm text-gray-500 uppercase">Total Value Settled</p>
+                <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <p className="text-sm text-muted-foreground uppercase">Total Value Settled</p>
                     <p className="text-2xl font-bold text-emerald-600 mt-1">
                         {loading ? '...' : `₹${financials?.total_settled.toLocaleString()}`}
                     </p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border">
-                    <p className="text-sm text-gray-500 uppercase">Remaining Debt</p>
+                <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <p className="text-sm text-muted-foreground uppercase">Remaining Debt</p>
                     <p className="text-2xl font-bold text-red-600 mt-1">
                         {loading ? '...' : `₹${financials?.total_debt.toLocaleString()}`}
                     </p>
                 </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border">
-                    <p className="text-sm text-gray-500 uppercase">Platform Fees (Est.)</p>
+                <div className="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <p className="text-sm text-muted-foreground uppercase">Platform Fees (Est.)</p>
                     <p className="text-2xl font-bold text-blue-600 mt-1">
                         {loading ? '...' : `₹${financials?.platform_fees?.toLocaleString()}`}
                     </p>
@@ -116,26 +116,26 @@ export default function AdminDashboard() {
 
             {/* Quick Links */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <Link href="/admin/users" className="block p-6 bg-white rounded-xl shadow-sm border hover:shadow-md transition">
-                    <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                <Link href="/admin/users" className="block p-6 bg-card rounded-xl shadow-sm border border-border hover:shadow-md transition">
+                    <h2 className="text-xl font-semibold mb-2 flex items-center gap-2 text-foreground">
                         <Users className="w-5 h-5" /> User Manager
                     </h2>
-                    <p className="text-gray-600">View all users, search by email, and promote/demote admins.</p>
+                    <p className="text-muted-foreground">View all users, search by email, and promote/demote admins.</p>
                 </Link>
             </div>
         </div>
     );
 }
 
-function StatCard({ title, value, icon, subtext, color = 'text-gray-900' }: { title: string, value: any, icon: any, subtext?: string, color?: string }) {
+function StatCard({ title, value, icon, subtext, color = 'text-foreground' }: { title: string, value: any, icon: any, subtext?: string, color?: string }) {
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border flex items-center justify-between">
+        <div className="bg-card p-6 rounded-xl shadow-sm border border-border flex items-center justify-between">
             <div>
-                <p className="text-sm font-medium text-gray-500 uppercase">{title}</p>
+                <p className="text-sm font-medium text-muted-foreground uppercase">{title}</p>
                 <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
-                {subtext && <p className="text-xs text-gray-400 mt-1">{subtext}</p>}
+                {subtext && <p className="text-xs text-muted-foreground mt-1">{subtext}</p>}
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="p-3 bg-muted rounded-lg">
                 {icon}
             </div>
         </div>

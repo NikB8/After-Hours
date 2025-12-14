@@ -43,15 +43,15 @@ export default function AdminSettingsPage() {
 
     // Helper to render a setting row
     const renderRow = (key: string, label: string) => (
-        <div className="flex items-center justify-between p-4 bg-white border rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
             <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700">{label}</label>
-                <p className="text-xs text-gray-500 font-mono">{key}</p>
+                <label className="block text-sm font-medium text-foreground">{label}</label>
+                <p className="text-xs text-muted-foreground font-mono">{key}</p>
             </div>
             <div className="flex-1 mx-4">
                 <input
                     type="text"
-                    className="w-full border rounded-md p-2 font-mono text-sm"
+                    className="w-full border border-border bg-background text-foreground rounded-md p-2 font-mono text-sm"
                     value={edits[key] !== undefined ? edits[key] : (settings[key] || '')}
                     onChange={(e) => setEdits(prev => ({ ...prev, [key]: e.target.value }))}
                     placeholder="Value..."
@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
             </div>
             <button
                 onClick={() => handleSave(key)}
-                className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="bg-primary text-primary-foreground p-2 rounded-lg hover:bg-primary/90 disabled:opacity-50"
                 disabled={edits[key] === undefined || edits[key] === settings[key]}
             >
                 <Save className="w-4 h-4" />
@@ -69,8 +69,8 @@ export default function AdminSettingsPage() {
 
     return (
         <div className="p-8 space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <Settings className="w-8 h-8 text-gray-700" /> Global Platform Settings
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Settings className="w-8 h-8 text-foreground" /> Global Platform Settings
             </h1>
 
             {loading ? (
@@ -81,7 +81,7 @@ export default function AdminSettingsPage() {
                     {renderRow('support_email', 'Support Contact Email')}
                     {renderRow('maintenance_mode', 'Maintenance Mode (true/false)')}
 
-                    <div className="mt-8 p-4 bg-yellow-50 rounded-lg text-sm text-yellow-800">
+                    <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-sm text-yellow-800 dark:text-yellow-200 border border-yellow-100 dark:border-yellow-900/30">
                         Note: Adding new keys requires database access or an "Add Key" feature (omitted for MVP).
                     </div>
                 </div>

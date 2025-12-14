@@ -41,19 +41,19 @@ export default function AdminUsersPage() {
     };
 
     return (
-        <div className="p-8 space-y-6 bg-gray-50 min-h-screen">
+        <div className="p-8 space-y-6 bg-background min-h-screen">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-                    <p className="text-gray-500 mt-1">Manage users, track activity, and assign roles.</p>
+                    <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+                    <p className="text-muted-foreground mt-1">Manage users, track activity, and assign roles.</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                         <input
                             type="text"
                             placeholder="Search by name or email..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
+                            className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:outline-none shadow-sm placeholder:text-muted-foreground"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
@@ -61,90 +61,90 @@ export default function AdminUsersPage() {
                     {/* Add User Button */}
                     <button
                         onClick={() => setIsCreateOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition font-medium"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-sm transition font-medium"
                     >
                         <UserPlus className="w-4 h-4" /> Add User
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white shadow-lg border border-gray-200 rounded-xl overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50/50">
+            <div className="bg-card shadow-lg border border-border rounded-xl overflow-x-auto">
+                <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-muted/50">
                         <tr>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User Details</th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Company / Status</th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned Roles</th>
-                            <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">User Details</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Company / Status</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assigned Roles</th>
+                            <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
+                    <tbody className="bg-card divide-y divide-border">
                         {loading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                                 <tr key={i} className="animate-pulse">
-                                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-32"></div></td>
-                                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24"></div></td>
-                                    <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-20"></div></td>
+                                    <td className="px-6 py-4"><div className="h-4 bg-muted rounded w-32"></div></td>
+                                    <td className="px-6 py-4"><div className="h-4 bg-muted rounded w-24"></div></td>
+                                    <td className="px-6 py-4"><div className="h-4 bg-muted rounded w-20"></div></td>
                                     <td className="px-6 py-4"></td>
                                 </tr>
                             ))
                         ) : users.length === 0 ? (
-                            <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-500">No users found matching your criteria.</td></tr>
+                            <tr><td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">No users found matching your criteria.</td></tr>
                         ) : users.map((user) => (
-                            <tr key={user.id} className="hover:bg-blue-50/50 cursor-pointer transition-colors" onClick={() => handleUserClick(user)}>
+                            <tr key={user.id} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleUserClick(user)}>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center">
-                                        <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-sm">
                                             {user.name?.[0]?.toUpperCase() || 'U'}
                                         </div>
                                         <div className="ml-4">
-                                            <div className="text-sm font-medium text-gray-900">{user.name || 'No Name'}</div>
-                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                            <div className="text-sm font-medium text-foreground">{user.name || 'No Name'}</div>
+                                            <div className="text-sm text-muted-foreground">{user.email}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900">{user.company_domain || <span className="text-gray-400 italic">No Company</span>}</div>
-                                    <div className="text-xs text-gray-500 mt-1">{user.is_corporate_verified ? 'Verified Corp' : 'Public User'}</div>
+                                    <div className="text-sm text-foreground">{user.company_domain || <span className="text-muted-foreground italic">No Company</span>}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">{user.is_corporate_verified ? 'Verified Corp' : 'Public User'}</div>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex flex-wrap gap-2">
                                         {user.is_super_admin && (
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200 shadow-sm">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shadow-sm">
                                                 Super Admin
                                             </span>
                                         )}
                                         {user.roles && user.roles.length > 0 ? user.roles.map((ur: any) => (
-                                            <span key={ur.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                            <span key={ur.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                                 {ur.role.name}
                                             </span>
                                         )) : (
-                                            !user.is_super_admin && <span className="text-xs text-gray-400 italic">No roles</span>
+                                            !user.is_super_admin && <span className="text-xs text-muted-foreground italic">No roles</span>
                                         )}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <span className="text-indigo-600 hover:text-indigo-900">Manage</span>
+                                    <span className="text-primary hover:text-primary/80">Manage</span>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                 {/* Footer / Pagination */}
-                <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                    <span className="text-sm text-gray-500">Showing page {page} of {totalPages}</span>
+                <div className="bg-muted/30 px-6 py-4 border-t border-border flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Showing page {page} of {totalPages}</span>
                     <div className="flex gap-2">
                         <button
                             disabled={page === 1}
                             onClick={() => setPage(p => p - 1)}
-                            className="p-1 px-3 border rounded bg-white hover:bg-gray-50 disabled:opacity-50 text-sm"
+                            className="p-1 px-3 border border-input rounded bg-card hover:bg-muted disabled:opacity-50 text-sm text-foreground"
                         >
                             Previous
                         </button>
                         <button
                             disabled={page === totalPages}
                             onClick={() => setPage(p => p + 1)}
-                            className="p-1 px-3 border rounded bg-white hover:bg-gray-50 disabled:opacity-50 text-sm"
+                            className="p-1 px-3 border border-input rounded bg-card hover:bg-muted disabled:opacity-50 text-sm text-foreground"
                         >
                             Next
                         </button>

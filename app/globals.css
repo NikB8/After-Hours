@@ -24,24 +24,40 @@
 }
 
 .dark {
-  --background: 20 14.3% 4.1%;
-  --foreground: 0 0% 95%;
-  --card: 24 9.8% 10%;
-  --card-foreground: 0 0% 95%;
-  --popover: 0 0% 9%;
-  --popover-foreground: 0 0% 95%;
+  /* Charcoal Base #121212 */
+  --background: 0 0% 7%;
+  /* High Emphasis Text #F9FAFB */
+  --foreground: 210 20% 98%;
+
+  /* Level 1 Surface (Card) #1F2937 */
+  --card: 215 28% 17%;
+  --card-foreground: 210 20% 98%;
+
+  /* Level 2 Surface (Modal/Popover) #374151 */
+  --popover: 217 19% 27%;
+  --popover-foreground: 210 20% 98%;
+
+  /* Primary Green (Adjusted for Dark Mode contrast) */
   --primary: 142.1 70.6% 45.3%;
   --primary-foreground: 144.9 80.4% 10%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 12 6.5% 15.1%;
-  --accent-foreground: 0 0% 98%;
+
+  /* Secondary/Muted */
+  --secondary: 215 28% 17%;
+  --secondary-foreground: 210 20% 98%;
+
+  --muted: 215 28% 17%;
+  --muted-foreground: 215 20% 65%;
+  /* #A1A1AA or similar */
+
+  --accent: 215 28% 17%;
+  --accent-foreground: 210 20% 98%;
+
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 85.7% 97.3%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+
+  /* Borders: Subtle Gray #374151 */
+  --border: 217 19% 27%;
+  --input: 217 19% 27%;
   --ring: 142.4 71.8% 29.2%;
 }
 
@@ -80,19 +96,15 @@ body {
 
 @layer components {
   .form-label {
-    @apply block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2;
+    @apply block text-sm font-semibold mb-2;
+    color: var(--color-foreground);
   }
 
   .form-input,
   .form-select,
   .form-textarea {
-    @apply block w-full rounded-lg border-input bg-background text-foreground shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-4 py-3 border transition-all duration-200 ease-in-out placeholder:text-muted-foreground;
-  }
-
-  .form-input:focus,
-  .form-select:focus,
-  .form-textarea:focus {
-    @apply ring-2 ring-primary/20 border-primary outline-none;
+    @apply block w-full rounded-lg border border-input bg-background text-foreground shadow-sm px-4 py-3 transition-colors duration-200 placeholder:text-muted-foreground;
+    @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
   }
 
   .btn-primary {

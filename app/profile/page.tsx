@@ -1,96 +1,59 @@
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import ProfileDashboard from "@/components/ProfileDashboard";
-import { Metadata } from "next";
+'use client';
 
-export const metadata: Metadata = {
-    title: "My Profile | After Hours",
-    description: "Manage your personal information, clubs, and event history."
-};
+import { useEffect, useState } from 'react';
+import ProfilePersonal from '@/components/ProfilePersonal';
+import ProfileSecurity from '@/components/ProfileSecurity';
+import ProfileHistory from '@/components/ProfileHistory';
 
-export default async function ProfilePage() {
-    const session = await auth();
+export default function ProfilePage() {
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    if (!session?.user?.id) {
-        redirect("/api/auth/signin?callbackUrl=/profile");
-    }
-
-    const userId = session.user.id;
-
-    // We fetch the exact same data structure as the API
-    const userProfile = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            company_name: true,
-            is_super_admin: true,
-            primary_company: {
-                select: {
-                    domain_name: true,
-                    id: true
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await fetch('/api/v1/users/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    setUser(data);
                 }
-            },
-            clubMemberships: {
-                include: {
-                    club: true
-                }
-            },
-            participations: {
-                include: {
-                    event: {
-                        include: {
-                            club: true,
-                            company: true
-                        }
-                    }
-                },
-                orderBy: {
-                    event: {
-                        start_time: 'desc'
-                    }
-                }
-            },
-            managedEvents: {
-                include: {
-                    club: true,
-                    company: true,
-                    participants: {
-                        where: { user_id: userId }
-                    }
-                },
-                orderBy: {
-                    start_time: 'desc'
-                }
+            } catch (error) {
+                console.error('Failed to load profile', error);
+            } finally {
+                setLoading(false);
             }
-        }
-    });
+        };
 
-    if (!userProfile) {
-        // Should not happen for logged in user
-        redirect("/");
+        fetchProfile();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+        );
     }
 
-    // Prepare data for the dashboard (handling potential nulls if strictly typed)
-    const formattedProfile = {
-        ...userProfile,
-        name: userProfile.name || 'Anonymous',
-        // Merge managed events into participations if they are not there?
-        // For simplicity and matching the Dashboard component which expects `participations`, 
-        // we can just pass the raw data and let the dashboard handle 'participations' list.
-        // The dashboard only uses 'participations' map. 
-        // If we want to show hosted events that I didn't RSVP to (rare?), we might miss them.
-        // But let's assume if I organize it, I'm involved.
-        // The prompt asked for "Event History" from events and participants tables.
-        // I'll stick to 'participations' as the source for now.
-    };
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-600">
+                Failed to load profile.
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-12">
-            <ProfileDashboard profile={formattedProfile as any} />
+        <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold text-foreground">Your Profile</h1>
+                </div>
+
+                <ProfilePersonal user={user} />
+                <ProfileHistory events={user.past_events} />
+                <ProfileSecurity userEmail={user.email} />
+            </div>
         </div>
     );
 }

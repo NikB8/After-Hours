@@ -47,38 +47,38 @@ export default function PaymentDueCard({ eventId, userEmail }: { eventId: string
     const unpaidMembers = data.participants.filter(p => !p.is_paid);
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mt-6 relative overflow-hidden">
+        <div className="bg-card p-6 rounded-xl shadow-md border border-border mt-6 relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                 <DollarSign className="w-32 h-32 text-green-700" />
             </div>
 
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <h3 className="text-lg font-bold text-foreground mb-4 flex items-center">
                 <DollarSign className="w-5 h-5 mr-2 text-green-600" />
                 Event Expenses
             </h3>
 
             {/* Financial Summary */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Total Cost</p>
-                    <p className="text-lg font-black text-gray-900">₹{data.total_cost.toFixed(2)}</p>
+                <div className="bg-muted/50 p-3 rounded-lg border border-border text-center">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Total Cost</p>
+                    <p className="text-lg font-black text-foreground">₹{data.total_cost.toFixed(2)}</p>
                 </div>
-                <div className="bg-green-50 p-3 rounded-lg border border-green-100 text-center">
-                    <p className="text-xs text-green-700 uppercase tracking-wider font-bold">Collected</p>
-                    <p className="text-lg font-black text-green-700">₹{data.total_collected.toFixed(2)}</p>
+                <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg border border-green-200 dark:border-green-800 text-center">
+                    <p className="text-xs text-green-700 dark:text-green-400 uppercase tracking-wider font-bold">Collected</p>
+                    <p className="text-lg font-black text-green-700 dark:text-green-300">₹{data.total_collected.toFixed(2)}</p>
                 </div>
-                <div className="bg-red-50 p-3 rounded-lg border border-red-100 text-center">
-                    <p className="text-xs text-red-700 uppercase tracking-wider font-bold">Still Owed</p>
-                    <p className="text-lg font-black text-red-700">₹{data.total_outcome_outstanding.toFixed(2)}</p>
+                <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg border border-red-200 dark:border-red-800 text-center">
+                    <p className="text-xs text-red-700 dark:text-red-400 uppercase tracking-wider font-bold">Still Owed</p>
+                    <p className="text-lg font-black text-red-700 dark:text-red-300">₹{data.total_outcome_outstanding.toFixed(2)}</p>
                 </div>
             </div>
 
             {/* My Status */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-6 border border-gray-100">
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mb-6 border border-border">
                 <div>
-                    <p className="text-sm font-bold text-gray-700">Your Share</p>
-                    <p className="text-2xl font-black text-gray-900">₹{Number(data.my_amount_due).toFixed(2)}</p>
+                    <p className="text-sm font-bold text-muted-foreground">Your Share</p>
+                    <p className="text-2xl font-black text-foreground">₹{Number(data.my_amount_due).toFixed(2)}</p>
                 </div>
                 <div>
                     {data.my_is_paid ? (
@@ -107,14 +107,14 @@ export default function PaymentDueCard({ eventId, userEmail }: { eventId: string
                 </button>
 
                 {expanded && (
-                    <div className="mt-4 space-y-2 bg-red-50 p-4 rounded-lg animate-in slide-in-from-top-2">
+                    <div className="mt-4 space-y-2 bg-red-100 dark:bg-red-900/30 p-4 rounded-lg animate-in slide-in-from-top-2">
                         {unpaidMembers.length === 0 ? (
                             <p className="text-sm text-green-600 font-medium text-center">Everyone has paid! 🎉</p>
                         ) : (
                             unpaidMembers.map(p => (
                                 <div key={p.user_id} className="flex items-center justify-between text-sm">
-                                    <span className="font-medium text-gray-800">{p.user_name}</span>
-                                    <span className="text-xs text-red-500 font-bold px-2 py-1 bg-white rounded-full border border-red-100">Unpaid</span>
+                                    <span className="font-medium text-foreground">{p.user_name}</span>
+                                    <span className="text-xs text-red-500 font-bold px-2 py-1 bg-card rounded-full border border-red-200 dark:border-red-800">Unpaid</span>
                                 </div>
                             ))
                         )}

@@ -10,7 +10,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
     const [showCustomSport, setShowCustomSport] = useState(false);
 
     const [formData, setFormData] = useState({
-        sport: 'Badminton',
+        sport: '',
         start_time: '',
         end_time: '',
         venue_name: '',
@@ -35,8 +35,11 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
             if (startTime && !prev.end_time) {
                 const start = new Date(startTime);
                 const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hour
-                // Format to datetime-local string: YYYY-MM-DDTHH:mm
-                const endString = end.toISOString().slice(0, 16);
+
+                // Format to datetime-local string manually to preserve local time: YYYY-MM-DDTHH:mm
+                const pad = (num: number) => num.toString().padStart(2, '0');
+                const endString = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
                 newState.end_time = endString;
             }
             return newState;
@@ -45,6 +48,13 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate dates
+        if (new Date(formData.end_time) <= new Date(formData.start_time)) {
+            setError('End time must be after start time');
+            return;
+        }
+
         setLoading(true);
         setError('');
 
@@ -70,9 +80,9 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-card p-8 rounded-2xl shadow-lg border border-border">
             {error && (
-                <div className="p-4 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100 flex items-center gap-2">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm border border-red-100 dark:border-red-900/30 flex items-center gap-2">
                     ⚠️ {error}
                 </div>
             )}
@@ -97,7 +107,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                                 setShowCustomSport(false);
                                 setFormData(prev => ({ ...prev, sport: 'Badminton' }));
                             }}
-                            className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
+                            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground font-medium"
                         >
                             Select from list
                         </button>
@@ -116,6 +126,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                         }}
                         className="form-select"
                     >
+                        <option value="" disabled>Select a sport</option>
                         <option value="Badminton">Badminton</option>
                         <option value="Football">Football</option>
                         <option value="Basketball">Basketball</option>
@@ -197,7 +208,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                     <label className="form-label">Estimated Cost (Total) <span className="text-red-500">*</span></label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 sm:text-sm">₹</span>
+                            <span className="text-muted-foreground sm:text-sm">₹</span>
                         </div>
                         <input
                             type="number"
@@ -210,6 +221,41 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                             className="form-input pl-7"
                         />
                     </div>
+                </div>
+            </div>
+
+            <div className="pt-4 border-t border-border">
+                <h3 className="text-lg font-medium text-foreground mb-4">Your Transport</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="form-label">How are you getting there? <span className="text-red-500">*</span></label>
+                        <select
+                            name="transport_mode"
+                            value={(formData as any).transport_mode || 'Independent'}
+                            onChange={handleChange}
+                            className="form-select"
+                        >
+                            <option value="Independent">Reaching Myself</option>
+                            <option value="Rider">Need a Ride</option>
+                            <option value="Driver">I have a car</option>
+                        </select>
+                    </div>
+
+                    {(formData as any).transport_mode === 'Driver' && (
+                        <div>
+                            <label className="form-label">Seats Available <span className="text-red-500">*</span></label>
+                            <input
+                                type="number"
+                                name="car_seats"
+                                min="1"
+                                required
+                                value={(formData as any).car_seats || ''}
+                                onChange={handleChange}
+                                placeholder="Number of passengers you can take"
+                                className="form-input"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

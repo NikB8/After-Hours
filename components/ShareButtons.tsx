@@ -52,7 +52,10 @@ export default function ShareButtons({ eventId, eventTitle, userId }: { eventId:
                 className="p-2 rounded-full bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
                 title="Share on Teams"
             >
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg" alt="Teams" className="w-5 h-5" />
+                {/* Simple Teams Icon SVG */}
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M23 4H17V3C17 1.34315 15.6569 0 14 0H4C2.34315 0 1 1.34315 1 3V17C1 18.6569 2.34315 20 4 20H8V21C8 22.6569 9.34315 24 11 24H21C22.6569 24 24 22.6569 24 21V4ZM10 18H4C3.44772 18 3 17.5523 3 17V3C3 2.44772 3.44772 2 4 2H14C14.5523 2 15 2.44772 15 3V11H11C10.4477 11 10 11.4477 10 12V18ZM22 21C22 21.5523 21.5523 22 21 22H11C10.4477 22 10 21.5523 10 21V13H15V6H21C21.5523 6 22 6.44772 22 7V21Z" />
+                </svg>
             </button>
             <button
                 onClick={handleCopy}

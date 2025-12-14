@@ -20,7 +20,7 @@ model User {
   // Custom fields
   company_domain String? // Extracted from email, max 100
   company_name   String? // Self-reported by user
-  skill_level    String   @default("Beginner") // Enum: Beginner, Intermediate, Advanced, Pro
+
   bio            String?
   upi_id         String?  // New field for Organizer UPI
   is_super_admin Boolean  @default(false)
