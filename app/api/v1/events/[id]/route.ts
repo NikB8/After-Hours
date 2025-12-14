@@ -14,7 +14,6 @@ export async function GET(
                 organizer: {
                     select: {
                         email: true,
-                        skill_level: true,
                     },
                 },
             },

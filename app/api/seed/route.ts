@@ -16,7 +16,6 @@ export async function GET() {
                 password: hashedPassword,
                 name: "Nikhil Dev",
                 company_domain: 'example.com',
-                skill_level: 'Advanced',
                 bio: 'Founder',
                 is_super_admin: true
             },

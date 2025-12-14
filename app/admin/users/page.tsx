@@ -185,7 +185,6 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: any, onClose: () =
     // Form and standard state
     const [formData, setFormData] = useState({
         name: user.name || '',
-        skill_level: user.skill_level || 'Beginner',
         emailVerified: !!user.emailVerified,
         company_domain: user.company_domain || ''
     });

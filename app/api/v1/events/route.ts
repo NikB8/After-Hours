@@ -107,7 +107,6 @@ export async function GET(request: Request) {
                 organizer: {
                     select: {
                         email: true,
-                        skill_level: true,
                     },
                 },
                 _count: {

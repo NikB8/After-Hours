@@ -14,14 +14,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     try {
         const body = await req.json();
-        const { name, skill_level, emailVerified, company_domain } = body;
+        const { name, emailVerified, company_domain } = body;
 
         // Perform Update
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
                 name,
-                skill_level,
                 // Handle date conversion if string passed, or null for unverify.
                 // Assuming boolean toggle from UI -> convert to Date or null
                 emailVerified: emailVerified ? new Date() : null,

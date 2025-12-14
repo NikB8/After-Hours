@@ -44,7 +44,6 @@ export async function GET(request: Request) {
                     is_super_admin: true,
                     createdAt: true,
                     company_domain: true,
-                    skill_level: true,
                     emailVerified: true,
                     image: true,
                     roles: {
@@ -99,7 +98,7 @@ export async function POST(request: Request) {
                 password: hashedPassword,
                 company_domain,
                 // defaults
-                skill_level: 'Beginner'
+                // defaults
             }
         });
 

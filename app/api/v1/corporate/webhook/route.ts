@@ -36,8 +36,7 @@ export async function POST(request: Request) {
                 user = await prisma.user.create({
                     data: {
                         email: employee_email,
-                        company_domain: partner.domain,
-                        skill_level: 'Beginner', // Default
+                        // Default bio
                         bio: `Joined via ${partner.name} Corporate Program`,
                     },
                 });
