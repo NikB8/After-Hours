@@ -7,12 +7,15 @@ CREATE TABLE "User" (
     "password" TEXT,
     "image" TEXT,
     "company_domain" TEXT,
-    "skill_level" TEXT NOT NULL DEFAULT 'Beginner',
+    "company_name" TEXT,
     "bio" TEXT,
     "upi_id" TEXT,
     "is_super_admin" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "primary_company_id" INTEGER,
+    "is_corporate_verified" BOOLEAN NOT NULL DEFAULT false,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -115,6 +118,8 @@ CREATE TABLE "Event" (
     "id" TEXT NOT NULL,
     "organizer_id" TEXT NOT NULL,
     "club_id" TEXT,
+    "company_id" INTEGER,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
     "sport" TEXT NOT NULL,
     "start_time" TIMESTAMP(3) NOT NULL,
     "end_time" TIMESTAMP(3) NOT NULL,
@@ -126,6 +131,7 @@ CREATE TABLE "Event" (
     "total_cost_final" DECIMAL(65,30),
     "total_collected" DECIMAL(65,30) NOT NULL DEFAULT 0,
     "is_settled" BOOLEAN NOT NULL DEFAULT false,
+    "financial_status" TEXT NOT NULL DEFAULT 'Open',
     "status" TEXT NOT NULL DEFAULT 'Draft',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -149,10 +155,64 @@ CREATE TABLE "Participant" (
     "pickup_location" TEXT,
     "assigned_driver_id" TEXT,
     "team_name" TEXT,
+    "referred_by_id" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Participant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AdminAuditLog" (
+    "id" TEXT NOT NULL,
+    "admin_email" TEXT NOT NULL,
+    "action" TEXT NOT NULL,
+    "target" TEXT NOT NULL,
+    "details" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AdminAuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "GlobalSettings" (
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "GlobalSettings_pkey" PRIMARY KEY ("key")
+);
+
+-- CreateTable
+CREATE TABLE "Role" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+
+    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Company" (
+    "id" SERIAL NOT NULL,
+    "domain_name" TEXT NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserRole" (
+    "id" SERIAL NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "role_id" INTEGER NOT NULL,
+    "company_id" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserRole_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -188,6 +248,18 @@ CREATE INDEX "Event_start_time_idx" ON "Event"("start_time");
 -- CreateIndex
 CREATE UNIQUE INDEX "Participant_event_id_user_id_key" ON "Participant"("event_id", "user_id");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Company_domain_name_key" ON "Company"("domain_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserRole_user_id_role_id_company_id_key" ON "UserRole"("user_id", "role_id", "company_id");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_primary_company_id_fkey" FOREIGN KEY ("primary_company_id") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -216,7 +288,23 @@ ALTER TABLE "Event" ADD CONSTRAINT "Event_organizer_id_fkey" FOREIGN KEY ("organ
 ALTER TABLE "Event" ADD CONSTRAINT "Event_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "Club"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Event" ADD CONSTRAINT "Event_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Participant" ADD CONSTRAINT "Participant_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Participant" ADD CONSTRAINT "Participant_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Participant" ADD CONSTRAINT "Participant_referred_by_id_fkey" FOREIGN KEY ("referred_by_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
