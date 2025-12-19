@@ -43,7 +43,7 @@ export async function GET() {
                 where: {
                     user_id: user.id,
                     event: { start_time: { gt: now } },
-                    status: { in: ['Confirmed', 'Waitlist', 'Maybe'] }
+                    status: { in: ['Confirmed', 'Waitlist', 'Maybe', 'Invited'] }
                 },
                 include: {
                     event: {

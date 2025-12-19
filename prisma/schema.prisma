@@ -162,6 +162,7 @@ model Event {
   total_cost_final Decimal? // Organizer confirmed final cost
   total_collected Decimal @default(0)
   is_settled     Boolean  @default(false)
+  financial_status String @default("Open") // Enum: Open, Settled
   status         String   @default("Draft") // Enum: Draft, Open, Booked, Completed, Canceled
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

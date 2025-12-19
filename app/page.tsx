@@ -4,8 +4,11 @@ import { auth } from '@/auth';
 import HomeActionButtons from '@/components/HomeActionButtons';
 import HomeDashboardUI from '@/components/HomeDashboardUI';
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const session = await auth();
+  const params = await searchParams;
+  const callbackUrl = typeof params.callbackUrl === 'string' ? params.callbackUrl : undefined;
+
   console.log("DEBUG: Home session:", JSON.stringify(session, null, 2));
 
 
@@ -29,9 +32,12 @@ export default async function Home() {
           <div className="bg-card p-6 rounded-xl shadow-sm border border-border max-w-sm mx-auto">
             <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Login / Sign Up</h3>
             <div className="flex flex-col gap-3">
-              <CredentialsLogin />
+              <CredentialsLogin callbackUrl={callbackUrl} />
               <div className="text-center text-sm pt-2">
-                <Link href="/register" className="text-primary hover:text-primary/80">
+                <Link
+                  href={callbackUrl ? `/register?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/register'}
+                  className="text-primary hover:text-primary/80"
+                >
                   Create an Account
                 </Link>
               </div>

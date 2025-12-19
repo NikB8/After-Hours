@@ -2,14 +2,35 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import UserMultiSelect from '@/components/UserMultiSelect';
 
-export default function EventForm({ userEmail }: { userEmail: string }) {
+export interface EventFormData {
+    sport: string;
+    start_time: string;
+    end_time: string;
+    venue_name: string;
+    map_link: string;
+    max_players: number;
+    estimated_cost: number;
+    transport_mode?: string;
+    car_seats?: number;
+}
+
+interface EventFormProps {
+    userEmail: string;
+    initialData?: EventFormData;
+    eventId?: string;
+    isEditMode?: boolean;
+}
+
+export default function EventForm({ userEmail, initialData, eventId, isEditMode = false }: EventFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showCustomSport, setShowCustomSport] = useState(false);
+    const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<EventFormData>(initialData || {
         sport: '',
         start_time: '',
         end_time: '',
@@ -17,6 +38,8 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
         map_link: '',
         max_players: 4,
         estimated_cost: 0,
+        transport_mode: 'Independent',
+        car_seats: 0
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -59,19 +82,26 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
         setError('');
 
         try {
-            const res = await fetch('/api/v1/events', {
-                method: 'POST',
+            const url = isEditMode && eventId ? `/api/v1/events/${eventId}` : '/api/v1/events';
+            const method = isEditMode ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, organizer_email: userEmail }),
+                body: JSON.stringify({ ...formData, organizer_email: userEmail, invitedUserIds }),
             });
 
             if (!res.ok) {
                 const data = await res.json();
-                throw new Error(data.error || 'Failed to create event');
+                throw new Error(data.error || 'Failed to save event');
             }
 
             const event = await res.json();
+
+            // Redirect to event page
             router.push(`/events/${event.id}`);
+            router.refresh();
+
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -89,7 +119,7 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
 
             <div>
                 <label className="form-label">Sport / Activity <span className="text-red-500">*</span></label>
-                {showCustomSport ? (
+                {showCustomSport || (isEditMode && !['Badminton', 'Football', 'Basketball', 'Tennis', 'Cricket', 'Pickleball'].includes(formData.sport) && formData.sport !== '') ? (
                     <div className="flex gap-2">
                         <input
                             type="text"
@@ -224,47 +254,56 @@ export default function EventForm({ userEmail }: { userEmail: string }) {
                 </div>
             </div>
 
-            <div className="pt-4 border-t border-border">
-                <h3 className="text-lg font-medium text-foreground mb-4">Your Transport</h3>
-                <div className="space-y-4">
-                    <div>
-                        <label className="form-label">How are you getting there? <span className="text-red-500">*</span></label>
-                        <select
-                            name="transport_mode"
-                            value={(formData as any).transport_mode || 'Independent'}
-                            onChange={handleChange}
-                            className="form-select"
-                        >
-                            <option value="Independent">Reaching Myself</option>
-                            <option value="Rider">Need a Ride</option>
-                            <option value="Driver">I have a car</option>
-                        </select>
-                    </div>
-
-                    {(formData as any).transport_mode === 'Driver' && (
-                        <div>
-                            <label className="form-label">Seats Available <span className="text-red-500">*</span></label>
-                            <input
-                                type="number"
-                                name="car_seats"
-                                min="1"
-                                required
-                                value={(formData as any).car_seats || ''}
-                                onChange={handleChange}
-                                placeholder="Number of passengers you can take"
-                                className="form-input"
-                            />
-                        </div>
-                    )}
+            {!isEditMode && (
+                <div className="pt-4 border-t border-border">
+                    <h3 className="text-lg font-medium text-foreground mb-4">Invite Others</h3>
+                    <UserMultiSelect onSelectionChange={(ids) => setInvitedUserIds(ids)} />
                 </div>
-            </div>
+            )}
+
+            {!isEditMode && (
+                <div className="pt-4 border-t border-border">
+                    <h3 className="text-lg font-medium text-foreground mb-4">Your Transport</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="form-label">How are you getting there? <span className="text-red-500">*</span></label>
+                            <select
+                                name="transport_mode"
+                                value={formData.transport_mode || 'Independent'}
+                                onChange={handleChange}
+                                className="form-select"
+                            >
+                                <option value="Independent">Reaching Myself</option>
+                                <option value="Rider">Need a Ride</option>
+                                <option value="Driver">I have a car</option>
+                            </select>
+                        </div>
+
+                        {formData.transport_mode === 'Driver' && (
+                            <div>
+                                <label className="form-label">Seats Available <span className="text-red-500">*</span></label>
+                                <input
+                                    type="number"
+                                    name="car_seats"
+                                    min="1"
+                                    required
+                                    value={formData.car_seats || ''}
+                                    onChange={handleChange}
+                                    placeholder="Number of passengers you can take"
+                                    className="form-input"
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <button
                 type="submit"
                 disabled={loading}
                 className="btn-primary w-full"
             >
-                {loading ? 'Creating Event...' : 'Create Event'}
+                {loading ? 'Saving...' : (isEditMode ? 'Update Event' : 'Create Event')}
             </button>
         </form>
     );

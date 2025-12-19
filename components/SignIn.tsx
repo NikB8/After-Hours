@@ -3,7 +3,7 @@
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 
-export function CredentialsLogin() {
+export function CredentialsLogin({ callbackUrl }: { callbackUrl?: string }) {
     const [isPending, setIsPending] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +16,7 @@ export function CredentialsLogin() {
             const result = await authenticate(undefined, formData);
 
             if (result === 'success') {
-                window.location.href = '/';
+                window.location.href = callbackUrl || '/';
             } else if (result) {
                 setErrorMessage(result);
             }

@@ -66,6 +66,24 @@ export async function POST(request: Request) {
                 }
             });
 
+            // 5. Add Invited Participants
+            if (body.invitedUserIds && Array.isArray(body.invitedUserIds)) {
+                for (const invitedUserId of body.invitedUserIds) {
+                    if (invitedUserId !== userId) { // Prevent self-invite loop if UI fails
+                        await tx.participant.create({
+                            data: {
+                                event_id: newEvent.id,
+                                user_id: invitedUserId,
+                                status: 'Invited',
+                                is_paid: false,
+                                payment_status: 'Pending',
+                                transport_mode: 'Independent'
+                            }
+                        });
+                    }
+                }
+            }
+
             return newEvent;
         });
 

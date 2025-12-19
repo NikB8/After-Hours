@@ -3,17 +3,21 @@ import { notFound } from 'next/navigation';
 import RsvpAction from '@/components/RsvpAction';
 import RecommendationForm from '@/components/RecommendationForm';
 import TeamBuilder from '@/components/TeamBuilder';
-import ExpenseSettlement from '@/components/ExpenseSettlement';
+import FinancialHub from '@/components/FinancialHub';
 import ResponseBreakdown from '@/components/ResponseBreakdown';
 import TransportCoordination from '@/components/TransportCoordination';
 import PaymentDueCard from '@/components/PaymentDueCard';
 import EventInfoCard from '@/components/EventInfoCard';
 
+import { auth } from '@/auth';
+
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    // Mock auth: get current user (first user for demo)
-    const currentUser = await prisma.user.findFirst();
+    const session = await auth();
+    const currentUser = session?.user?.email
+        ? await prisma.user.findUnique({ where: { email: session.user.email } })
+        : null;
 
     const event = await prisma.event.findUnique({
         where: { id },
@@ -30,18 +34,28 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     const confirmedCount = event.participants.filter(p => p.status === 'Confirmed').length;
 
     // Determine current user's status
-    let userStatus: 'Confirmed' | 'Waitlist' | 'Declined' | 'None' = 'None';
+    let userStatus: 'Confirmed' | 'Waitlist' | 'Declined' | 'None' | 'Invited' = 'None';
     if (currentUser) {
         const participant = event.participants.find(p => p.user_id === currentUser.id);
         if (participant) {
             userStatus = participant.status as any;
+        } else if (event.organizer_id !== currentUser.id) {
+            // New visitor: Mark as 'Invited' so it shows up on their dashboard
+            await prisma.participant.create({
+                data: {
+                    event_id: event.id,
+                    user_id: currentUser.id,
+                    status: 'Invited'
+                }
+            });
+            userStatus = 'Invited';
         }
     }
 
     const isOrganizer = currentUser ? event.organizer_id === currentUser.id : false;
     const isCompleted = event.status === 'Completed';
     const isCreator = isOrganizer; // Alias for consistency if needed, checking usages
-    const isSuperAdmin = false; // Placeholder if variable is used in JSX template
+    const isSuperAdmin = currentUser?.is_super_admin || false;
 
     // Serialize Decimal fields to numbers/strings to pass to Client Component
     const serializedEvent = {
@@ -55,6 +69,18 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     return (
         <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto space-y-6">
+                {/* Actions Bar */}
+                {(isOrganizer || isSuperAdmin) && (
+                    <div className="flex justify-end">
+                        <a
+                            href={`/events/${event.id}/edit`}
+                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                        >
+                            ✏️ Edit Event
+                        </a>
+                    </div>
+                )}
+
                 {/* Event Details Card */}
                 <EventInfoCard event={serializedEvent} />
 
@@ -84,8 +110,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                         )}
 
                         {isOrganizer && (
-                            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mt-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">📢 Response Breakdown</h3>
+                            <div className="bg-card p-6 rounded-xl shadow-md border border-border mt-6">
+                                <h3 className="text-lg font-semibold text-foreground mb-4">📢 Response Breakdown</h3>
                                 <ResponseBreakdown eventId={event.id} />
                             </div>
                         )}
@@ -102,11 +128,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                             isOrganizer={isOrganizer}
                         />
 
-                        <ExpenseSettlement
+                        <FinancialHub
                             eventId={event.id}
-                            userEmail={currentUser.email}
                             userId={currentUser.id}
-                            isOrganizer={isOrganizer}
                         />
                     </>
                 )}

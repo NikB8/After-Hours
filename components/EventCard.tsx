@@ -48,6 +48,9 @@ export default function EventCard({ event }: EventCardProps) {
         statusBadgeColor = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
     } else if (event.currentUserStatus === 'Maybe') {
         statusBadgeColor = 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300';
+    } else if (event.currentUserStatus === 'Invited') {
+        statusBadgeColor = 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+        statusText = 'Pending Invite';
     }
 
     return (

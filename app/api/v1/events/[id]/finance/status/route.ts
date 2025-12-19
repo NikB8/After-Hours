@@ -25,6 +25,7 @@ export async function GET(
                 user_id: true,
                 amount_due: true,
                 is_paid: true,
+                payment_status: true,
                 paid_by_id: true,
                 user: {
                     select: {
@@ -56,15 +57,22 @@ export async function GET(
         const event = await prisma.event.findUnique({
             where: { id: eventId },
             select: {
+                estimated_cost: true,
                 actual_cost: true,
                 total_cost_final: true,
                 total_collected: true,
-                is_settled: true
+                is_settled: true,
+                financial_status: true,
+                organizer_id: true
             }
         });
 
+        const totalCost = Number(event?.total_cost_final || event?.actual_cost || event?.estimated_cost || 0);
+        const confirmedCount = participants.length;
+        const perPersonShare = confirmedCount > 0 ? (totalCost / confirmedCount) : 0;
+
         return NextResponse.json({
-            event,
+            event: { ...event, per_person_share: perPersonShare },
             participants: formattedParticipants
         });
 

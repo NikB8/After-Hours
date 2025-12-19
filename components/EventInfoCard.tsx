@@ -1,6 +1,6 @@
 'use client';
 
-import ShareButtons from '@/components/ShareButtons';
+
 
 type EventInfoCardProps = {
     event: {
@@ -43,7 +43,7 @@ export default function EventInfoCard({ event }: EventInfoCardProps) {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <ShareButtons eventId={event.id} eventTitle={`${event.sport} on ${dateStr}`} />
+
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${event.status === 'Open' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
                         }`}>
                         {event.status}

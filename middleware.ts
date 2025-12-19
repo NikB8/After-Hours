@@ -10,16 +10,16 @@ export default auth((req) => {
 
     if (nextUrl.pathname.startsWith('/admin')) {
         if (!isLoggedIn) {
-            return NextResponse.redirect(new URL('/', nextUrl));
+            return NextResponse.redirect(new URL(`/?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl));
         }
         if (!isSystemAdmin) {
-            return NextResponse.redirect(new URL('/', nextUrl));
+            return NextResponse.redirect(new URL(`/?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl));
         }
     }
 
     // Protect /events and /clubs
     if ((nextUrl.pathname.startsWith('/events') || nextUrl.pathname.startsWith('/clubs')) && !isLoggedIn) {
-        return NextResponse.redirect(new URL('/', nextUrl));
+        return NextResponse.redirect(new URL(`/?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl));
     }
     return NextResponse.next();
 })

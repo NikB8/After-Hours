@@ -52,7 +52,7 @@ export default function ResponseBreakdown({ eventId }: { eventId: string }) {
     if (!data) return <div className="text-sm text-red-500">Failed to load data.</div>;
 
     const sections = [
-        { key: 'Confirmed', label: '✅ Confirmed', count: data.counts.Confirmed + data.counts.Organizer, color: 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30' },
+        { key: 'Confirmed', label: '✅ Confirmed', count: data.counts.Confirmed, color: 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30' },
         { key: 'Maybe', label: '🤔 Maybe', count: data.counts.Maybe, color: 'text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30' },
         { key: 'Declined', label: '❌ Declined', count: data.counts.Declined, color: 'text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30' },
         { key: 'Waitlist', label: '⏳ Waitlist', count: data.counts.Waitlist, color: 'text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30' },

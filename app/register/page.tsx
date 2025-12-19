@@ -1,52 +1,19 @@
 
 'use client';
 
+import { Suspense } from 'react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function RegisterPage() {
+function RegistrationForm() {
     const router = useRouter();
-    const [formData, setFormData] = useState({ name: '', companyName: '', email: '', password: '' });
-    const [showPassword, setShowPassword] = useState(false); // New State
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl');
+    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-    // ... existing code ...
-
-    // (Inside JSX)
-    // ...
-    // ...
-    // ...
-    // Note: I will use a larger replacement to cover the insertion point more cleanly in the next chunk or here.
-    // The previous tool call output shows the state definition at line 11.
-    // I will replace lines 11-13.
-    // And then insert the input field.
-
-    // Let's do state update first.
-
-    // ... existing code ...
-
-    // (Inside JSX)
-    <div className="relative">
-        <label htmlFor="password" className="sr-only">Password</label>
-        <input
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            required
-            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-            placeholder="Password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        />
-        <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 z-20"
-            onClick={() => setShowPassword(!showPassword)}
-        >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-        </button>
-    </div>
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -76,10 +43,10 @@ export default function RegisterPage() {
                     console.error('Auto-login failed:', result.error);
                     setError('Account created, but auto-login failed. Please sign in manually.');
                     // Don't redirect to /api/auth/signin, let user stay or go to home to login
-                    setTimeout(() => router.push('/'), 2000);
+                    setTimeout(() => router.push(callbackUrl || '/'), 2000);
                 } else {
                     router.refresh();
-                    router.push('/');
+                    router.push(callbackUrl || '/');
                 }
             } else {
                 const data = await res.json();
@@ -118,19 +85,7 @@ export default function RegisterPage() {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
-                        <div>
-                            <label htmlFor="companyName" className="sr-only">Company Name</label>
-                            <input
-                                id="companyName"
-                                name="companyName"
-                                type="text"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-border bg-muted/20 placeholder-muted-foreground text-foreground focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Company Name *"
-                                value={formData.companyName}
-                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                            />
-                        </div>
+
                         <div>
                             <label htmlFor="email-address" className="sr-only">Email address</label>
                             <input
@@ -182,5 +137,13 @@ export default function RegisterPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <RegistrationForm />
+        </Suspense>
     );
 }
