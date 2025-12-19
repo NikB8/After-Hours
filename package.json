@@ -12,6 +12,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "5.22.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@types/pg": "^8.16.0",
     "bcryptjs": "^3.0.3",
@@ -27,7 +28,6 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@prisma/client": "5.22.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
