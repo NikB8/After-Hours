@@ -11,6 +11,8 @@ type RsvpActionProps = {
     confirmedCount: number;
     userStatus: 'Confirmed' | 'Waitlist' | 'Declined' | 'Maybe' | 'None' | 'Invited';
     userEmail: string; // Mock auth
+    onStatusChange?: (newStatus: 'Confirmed' | 'Waitlist' | 'Declined' | 'Maybe') => void;
+    isCompleted?: boolean;
 };
 
 export default function RsvpAction({
@@ -19,7 +21,10 @@ export default function RsvpAction({
     confirmedCount,
     userStatus: initialStatus,
     userEmail,
+    onStatusChange,
+    isCompleted = false,
 }: RsvpActionProps) {
+    const useRouter = require('next/navigation').useRouter;
     const router = useRouter();
     const [status, setStatus] = useState(initialStatus);
     const [loading, setLoading] = useState(false);
@@ -28,11 +33,19 @@ export default function RsvpAction({
     const [showModal, setShowModal] = useState(false);
 
     const handleUpdateStatus = async (newStatus: 'Confirmed' | 'Maybe' | 'Declined', transportMode?: string, carSeats?: number) => {
+        if (isCompleted) return;
+
         // If clicking "Yes", show modal first (unless we are just calling this from the modal itself)
         if (newStatus === 'Confirmed' && !transportMode) {
             setShowModal(true);
             return;
         }
+
+        // Optimistic UI Update start
+        const previousStatus = status;
+        setStatus(newStatus);
+        if (onStatusChange) onStatusChange(newStatus);
+        // End Optimistic UI
 
         setLoading(true);
         setMessage('');
@@ -63,10 +76,15 @@ export default function RsvpAction({
             }
 
             const data = await res.json();
-            setStatus(data.status); // 'Confirmed' | 'Waitlist' | 'Maybe' | 'Declined'
-            router.refresh();
+            // Confirm with server data (usually same as optimistic)
+            setStatus(data.status);
+            // router.refresh(); // Optional if we are handling state locally now, but good for data consistency
         } catch (error: any) {
+            console.error(error);
             setMessage(error.message || 'Error updating status');
+            // Revert Optimistic UI
+            setStatus(previousStatus);
+            if (onStatusChange) onStatusChange(previousStatus as any);
         } finally {
             setLoading(false);
         }
@@ -79,15 +97,22 @@ export default function RsvpAction({
             <div className="bg-card p-6 rounded-xl shadow-md border border-border">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-foreground">RSVP</h3>
-                    <span className="text-sm font-medium text-muted-foreground">
-                        {confirmedCount} / {maxPlayers} Players
-                    </span>
+                    <div className="flex flex-col items-end">
+                        <span className="text-sm font-medium text-muted-foreground">
+                            {confirmedCount} / {maxPlayers} Players
+                        </span>
+                        {isCompleted && (
+                            <span className="text-xs font-bold text-red-500 uppercase tracking-wide">
+                                Event Completed
+                            </span>
+                        )}
+                    </div>
                 </div>
 
                 <div className="space-y-4">
                     {status === 'Confirmed' && (
                         <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md text-center font-medium">
-                            You are playing! 🏸
+                            You are playing! 🎉
                         </div>
                     )}
                     {status === 'Waitlist' && (
@@ -100,11 +125,11 @@ export default function RsvpAction({
                         {/* Yes Button */}
                         <button
                             onClick={() => handleUpdateStatus('Confirmed')}
-                            disabled={loading || (isFull && status !== 'Confirmed')}
+                            disabled={loading || (isFull && status !== 'Confirmed') || isCompleted}
                             className={`flex-1 py-2 px-2 rounded-md font-medium transition-colors border ${status === 'Confirmed'
                                 ? 'bg-green-600 text-white border-green-600'
                                 : 'bg-transparent text-green-700 dark:text-green-400 border-green-600 dark:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20'
-                                } disabled:opacity-50`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {loading && status === 'Confirmed' ? '...' : (isFull && status !== 'Confirmed' ? 'Waitlist' : "Yes, I'm In!")}
                         </button>
@@ -112,11 +137,11 @@ export default function RsvpAction({
                         {/* Maybe Button */}
                         <button
                             onClick={() => handleUpdateStatus('Maybe')}
-                            disabled={loading}
+                            disabled={loading || isCompleted}
                             className={`flex-1 py-2 px-2 rounded-md font-medium transition-colors border ${status === 'Maybe'
                                 ? 'bg-yellow-500 text-white border-yellow-500'
                                 : 'bg-transparent text-yellow-600 dark:text-yellow-400 border-yellow-500 dark:border-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
-                                } disabled:opacity-50`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {loading && status === 'Maybe' ? '...' : 'Maybe'}
                         </button>
@@ -124,11 +149,11 @@ export default function RsvpAction({
                         {/* No Button */}
                         <button
                             onClick={() => handleUpdateStatus('Declined')}
-                            disabled={loading}
+                            disabled={loading || isCompleted}
                             className={`flex-1 py-2 px-2 rounded-md font-medium transition-colors border ${status === 'Declined'
                                 ? 'bg-red-600 text-white border-red-600'
                                 : 'bg-transparent text-red-600 dark:text-red-400 border-red-600 dark:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'
-                                } disabled:opacity-50`}
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {loading && status === 'Declined' ? '...' : "No, Can't"}
                         </button>

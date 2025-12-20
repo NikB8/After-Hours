@@ -50,7 +50,7 @@ export default function ProfilePersonal({ user }: { user: any }) {
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-muted-foreground mb-1">Company</label>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Domain Name</label>
                         <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border text-foreground">
                             <Briefcase className="w-4 h-4 text-muted-foreground" />
                             <span>{user.company_name || user.company_domain || 'Not specified'}</span>

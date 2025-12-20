@@ -8,6 +8,7 @@ import ResponseBreakdown from '@/components/ResponseBreakdown';
 import TransportCoordination from '@/components/TransportCoordination';
 import PaymentDueCard from '@/components/PaymentDueCard';
 import EventInfoCard from '@/components/EventInfoCard';
+import EventStatusManager from '@/components/EventStatusManager';
 
 import { auth } from '@/auth';
 
@@ -53,7 +54,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     }
 
     const isOrganizer = currentUser ? event.organizer_id === currentUser.id : false;
-    const isCompleted = event.status === 'Completed';
+    const isCompleted = event.status === 'Completed' || new Date() > new Date(event.end_time);
     const isCreator = isOrganizer; // Alias for consistency if needed, checking usages
     const isSuperAdmin = currentUser?.is_super_admin || false;
 
@@ -87,27 +88,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 {/* RSVP Action Card */}
                 {currentUser && (
                     <>
-                        {/* Show Expense Tracking if Completed and Confirmed, else show RSVP */}
-                        {isCompleted && userStatus === 'Confirmed' ? (
-                            <PaymentDueCard
-                                eventId={event.id}
-                                userEmail={currentUser.email}
-                            />
-                        ) : (
-                            <RsvpAction
-                                eventId={event.id}
-                                maxPlayers={event.max_players}
-                                confirmedCount={confirmedCount}
-                                userStatus={userStatus}
-                                userEmail={currentUser.email}
-                            />
-                        )}
-
-                        {userStatus === 'Confirmed' && (
-                            <TransportCoordination
-                                eventId={event.id}
-                            />
-                        )}
+                        <EventStatusManager
+                            eventId={event.id}
+                            maxPlayers={event.max_players}
+                            initialConfirmedCount={confirmedCount}
+                            initialUserStatus={userStatus}
+                            userEmail={currentUser.email}
+                            isCompleted={isCompleted}
+                            isAdmin={isOrganizer || isSuperAdmin}
+                        />
 
                         {isOrganizer && (
                             <div className="bg-card p-6 rounded-xl shadow-md border border-border mt-6">

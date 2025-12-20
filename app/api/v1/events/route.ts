@@ -103,8 +103,10 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type'); // 'upcoming'
+        const session = await auth();
+        const currentUserId = session?.user?.id;
 
-        let whereClause = {};
+        let whereClause: any = {};
         if (type === 'upcoming') {
             whereClause = {
                 start_time: {
@@ -127,6 +129,15 @@ export async function GET(request: Request) {
                         email: true,
                     },
                 },
+                participants: {
+                    // We need to fetch participants to determine currentUserStatus
+                    // Optimization: We could filter this relation if list is huge, 
+                    // but for now fetch all is safer for correct status.
+                    select: {
+                        user_id: true,
+                        status: true
+                    }
+                },
                 _count: {
                     select: {
                         participants: true
@@ -135,7 +146,31 @@ export async function GET(request: Request) {
             },
         });
 
-        return NextResponse.json(events);
+        // Map events to include currentUserStatus
+        const mappedEvents = events.map(event => {
+            let userStatus = 'None';
+            if (currentUserId) {
+                if (event.organizer_id === currentUserId) {
+                    userStatus = 'Organizer';
+                } else {
+                    const participant = event.participants.find(p => p.user_id === currentUserId);
+                    if (participant) {
+                        userStatus = participant.status;
+                    }
+                }
+            }
+
+            // Remove participants array to keep response light if not needed, 
+            // but we might want to keep it minimal. 
+            // For now, let's just return what the UI expects + currentUserStatus
+            const { participants, ...rest } = event;
+            return {
+                ...rest,
+                currentUserStatus: userStatus
+            };
+        });
+
+        return NextResponse.json(mappedEvents);
     } catch (error) {
         console.error('Error fetching events:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

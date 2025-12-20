@@ -54,8 +54,8 @@ export function CredentialsLogin({ callbackUrl }: { callbackUrl?: string }) {
                     />
                     <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
-                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground z-10"
+                        onPointerDown={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
                     >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>

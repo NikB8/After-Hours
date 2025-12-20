@@ -34,8 +34,18 @@ export default function ShareButtons({ eventId, eventTitle, userId }: { eventId:
     const handleTeams = () => {
         const text = `Join me for ${eventTitle}!`;
         const url = getShareUrl();
-        // Microsoft Teams Share Endpoint
-        window.open(`https://teams.microsoft.com/share?href=${encodeURIComponent(url)}&msg=${encodeURIComponent(text)}`, '_blank');
+        // Microsoft Teams Deep Link
+        const deepLink = `msteams://teams.microsoft.com/l/chat/0/0?users=&message=${encodeURIComponent(text + ' ' + url)}`;
+        const webLink = `https://teams.microsoft.com/share?href=${encodeURIComponent(url)}&msg=${encodeURIComponent(text)}`;
+
+        // Try deep link, fallback behavior is up to browser/OS, 
+        // but typically we can try opening it. 
+        // For simplicity in web:
+        window.open(deepLink, '_blank');
+
+        // Note: Implementing a robust fallback to webLink usually requires a timeout or iframe trickery 
+        // which might be blocked by pop-up blockers. 
+        // The user request asked to "trigger the deep link URI scheme".
     };
 
     return (

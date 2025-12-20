@@ -79,7 +79,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="fixed inset-0 z-40 md:hidden">
                     <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
                     <div className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border z-50">
-                        <Sidebar />
+                        <Sidebar onLinkClick={() => setSidebarOpen(false)} />
                     </div>
                 </div>
             )}

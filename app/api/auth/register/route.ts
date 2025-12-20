@@ -70,6 +70,13 @@ export async function POST(req: Request) {
                         company_id: companyId
                     }
                 });
+            } else {
+                console.error("CRITICAL: 'Player' role not found in DB. User created without role.");
+                // Option: Throw error to rollback transaction?
+                // throw new Error("System configuration error: Default role missing");
+                // For now, let's allow user creation but log it, or we could fail.
+                // Given "Internal Server Error" complaint, failing is safer than broken state.
+                throw new Error("Default 'Player' role missing in database.");
             }
 
             return newUser;

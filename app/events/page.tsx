@@ -43,10 +43,16 @@ export default function EventsPage() {
     const now = new Date();
     const filteredEvents = events.filter(event => {
         const eventDate = new Date(event.start_time);
+
         if (filter === 'upcoming') {
             return eventDate >= now;
         } else {
-            return eventDate < now;
+            // PAST EVENTS LOGIC:
+            // Only show if user was a 'Participant' (Confirmed) or 'Invited' (or Organizer)
+            // 'Organizer' status sets currentUserStatus = 'Organizer' in API transformation
+            const interacted = ['Confirmed', 'Invited', 'Organizer', 'Waitlist'].includes(event.status); // event.status mapped to currentUserStatus in API
+
+            return eventDate < now && interacted;
         }
     });
 

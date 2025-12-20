@@ -3,17 +3,25 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Calendar, Users, Settings, Shield, LogOut } from 'lucide-react';
+import { useSession, signOut } from "next-auth/react";
 
-const navigation = [
-    { name: 'Home', href: '/', icon: Home },
-    { name: 'Events', href: '/events', icon: Calendar },
-    { name: 'Clubs', href: '/clubs', icon: Users },
-    { name: 'Admin', href: '/admin', icon: Shield },
-    { name: 'Profile', href: '/settings/profile', icon: Settings },
-];
-
-export default function Sidebar() {
+export default function Sidebar({ onLinkClick }: { onLinkClick?: () => void }) {
     const pathname = usePathname();
+    const { data: session } = useSession();
+
+    // Check if user has System_Admin or Corporate_Admin role
+    // @ts-expect-error Session types are not fully extended yet
+    const isAdminUser = session?.user?.is_super_admin ||
+        // @ts-expect-error Session types are not fully extended yet
+        session?.user?.roles?.some((r: { name: string }) => ['System_Admin', 'Corporate_Admin'].includes(r.name));
+
+    const navigation = [
+        { name: 'Home', href: '/', icon: Home },
+        { name: 'Events', href: '/events', icon: Calendar },
+        { name: 'Clubs', href: '/clubs', icon: Users },
+        ...(isAdminUser ? [{ name: 'Admin', href: '/admin', icon: Shield }] : []),
+        { name: 'Profile', href: '/settings/profile', icon: Settings },
+    ];
 
     return (
         <div className="flex flex-col h-full bg-card border-r border-border">
@@ -29,6 +37,7 @@ export default function Sidebar() {
                                 <Link
                                     key={item.name}
                                     href={item.href}
+                                    onClick={onLinkClick}
                                     className={`group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${isActive
                                         ? 'bg-primary/10 text-primary'
                                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
@@ -52,8 +61,6 @@ export default function Sidebar() {
         </div>
     );
 }
-
-import { useSession, signOut } from "next-auth/react";
 
 function UserProfile() {
     const { data: session } = useSession();
