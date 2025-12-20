@@ -2,6 +2,7 @@
 
 import { Share2, Link as LinkIcon, Check } from 'lucide-react';
 import { useState } from 'react';
+import { triggerHaptic } from '@/lib/haptics';
 
 export default function ShareButtons({ eventId, eventTitle, userId }: { eventId: string, eventTitle: string, userId?: string }) {
     const [copied, setCopied] = useState(false);
@@ -51,7 +52,7 @@ export default function ShareButtons({ eventId, eventTitle, userId }: { eventId:
     return (
         <div className="flex flex-col sm:flex-row gap-3">
             <button
-                onClick={handleWhatsApp}
+                onClick={() => { handleWhatsApp(); triggerHaptic(); }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors font-medium border border-[#25D366]/20"
                 title="Share on WhatsApp"
             >
@@ -59,7 +60,7 @@ export default function ShareButtons({ eventId, eventTitle, userId }: { eventId:
                 <span>WhatsApp</span>
             </button>
             <button
-                onClick={handleTeams}
+                onClick={() => { handleTeams(); triggerHaptic(); }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#6264A7]/10 text-[#6264A7] hover:bg-[#6264A7]/20 transition-colors font-medium border border-[#6264A7]/20"
                 title="Share on Teams"
             >
@@ -69,8 +70,8 @@ export default function ShareButtons({ eventId, eventTitle, userId }: { eventId:
                 <span>Teams</span>
             </button>
             <button
-                onClick={handleCopy}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium border border-gray-200"
+                onClick={() => { handleCopy(); triggerHaptic(); }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors font-medium border border-gray-200 dark:border-gray-700"
                 title="Copy Link"
             >
                 {copied ? <Check className="w-5 h-5 text-green-600" /> : <LinkIcon className="w-5 h-5" />}

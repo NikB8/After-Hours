@@ -15,9 +15,13 @@ export default function AuthPromptModal({ isOpen, onClose, callbackUrl }: AuthPr
     const encodedCallback = encodeURIComponent(callbackUrl);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-                <div className="relative p-6 text-center">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 p-0 sm:p-4 animate-in fade-in duration-200 backdrop-blur-md">
+            <div className="glass-panel w-full sm:w-auto max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300 sm:duration-200">
+                {/* Mobile Drag Handle */}
+                <div className="sm:hidden w-full flex justify-center pt-3 pb-1">
+                    <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
+                </div>
+                <div className="relative p-6 text-center pt-2 sm:pt-6">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"

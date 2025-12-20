@@ -14,13 +14,27 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "After Hours",
-  viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
+  // Viewport is now a separate export in Next.js 14+ usually, or part of metadata types if supported. 
+  // Should check if we should use 'viewport' export or generic metadata.
+  // Actually, 'viewport' is a separate export in recent Next.js versions.
   manifest: "/manifest.json",
-  themeColor: "#121212",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 import Providers from "@/components/Providers";
 import AppShell from "@/components/AppShell";
+import DynamicMetaTheme from "@/components/DynamicMetaTheme";
 
 export default function RootLayout({
   children,
@@ -33,6 +47,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <DynamicMetaTheme />
           <AppShell>
             {children}
           </AppShell>

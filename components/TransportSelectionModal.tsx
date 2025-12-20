@@ -31,8 +31,12 @@ export default function TransportSelectionModal({ isOpen, onClose, onConfirm, lo
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
-            <div className="bg-card rounded-2xl w-full max-w-md overflow-hidden shadow-xl animate-in zoom-in-95 duration-200 border border-border">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4 animate-in fade-in duration-200 backdrop-blur-md">
+            <div className="glass-panel w-full sm:w-full max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300 sm:duration-200 border-t sm:border border-border">
+                {/* Mobile Drag Handle */}
+                <div className="sm:hidden w-full flex justify-center pt-3 pb-1 bg-muted/50 border-b border-white/5">
+                    <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
+                </div>
                 <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-muted/50">
                     <h3 className="font-bold text-lg text-foreground">How are you getting there?</h3>
                     <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">

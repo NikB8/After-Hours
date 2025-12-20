@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import EventCard, { EventCardProps } from './EventCard';
+import EventSkeleton from './EventSkeleton';
 import { ArrowRight, Loader2 } from 'lucide-react';
 
 export default function HomeDashboardUI({ userName }: { userName: string }) {
@@ -51,7 +52,7 @@ export default function HomeDashboardUI({ userName }: { userName: string }) {
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-64 bg-muted rounded-xl animate-pulse"></div>
+                            <EventSkeleton key={i} />
                         ))}
                     </div>
                 ) : events.length === 0 ? (
@@ -66,9 +67,11 @@ export default function HomeDashboardUI({ userName }: { userName: string }) {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="snap-container flex overflow-x-auto snap-x snap-mandatory pb-4 gap-4 -mx-4 px-4 md:mx-0 md:px-0 md:pb-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible">
                         {events.map((event) => (
-                            <EventCard key={event.id} event={event} />
+                            <div key={event.id} className="event-card snap-center min-w-[85vw] md:min-w-0 flex-shrink-0 md:flex-shrink">
+                                <EventCard event={event} />
+                            </div>
                         ))}
                     </div>
                 )}

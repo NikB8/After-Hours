@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import UserMultiSelect from '@/components/UserMultiSelect';
+import { triggerHaptic } from '@/lib/haptics';
 
 export interface EventFormData {
     sport: string;
@@ -301,6 +302,7 @@ export default function EventForm({ userEmail, initialData, eventId, isEditMode 
             <button
                 type="submit"
                 disabled={loading}
+                onClick={() => triggerHaptic()}
                 className="btn-primary w-full"
             >
                 {loading ? 'Saving...' : (isEditMode ? 'Update Event' : 'Create Event')}
