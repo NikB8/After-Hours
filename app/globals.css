@@ -27,8 +27,11 @@
   --glass-border: 1px solid rgba(255, 255, 255, 0.4);
   --text-primary: #000000;
   --bg-gradient: radial-gradient(circle at 50% 50%, #e0f2fe 0%, #fbe7f3 50%, #ffffff 100%);
-  /* Soft mesh: Pastel Blue/Pink/White */
   --status-bar: #F2F2F2;
+
+  --nav-padding-top: env(safe-area-inset-top);
+  --nav-padding-bottom: env(safe-area-inset-bottom);
+
   /* Compact Spacing System */
   --spacing-layout: 24px;
 }
@@ -38,163 +41,6 @@
   :root {
     --spacing-layout: 16px;
   }
-}
-
-html {
-  scroll-padding-top: 80px;
-}
-
-body {
-  background-color: var(--color-background);
-  background-image: var(--bg-gradient);
-  background-attachment: fixed;
-  /* Optional: keeps gradient fixed */
-  color: var(--color-foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  min-height: 100dvh;
-  /* Jumping URL Bar Fix */
-  overscroll-behavior-y: none;
-  /* Disable rubber-band effect */
-}
-
-@layer components {
-
-  /* Common Interaction Feel */
-  button,
-  .btn,
-  [role="button"],
-  .tab,
-  svg {
-    user-select: none;
-    -webkit-user-select: none;
-  }
-
-  .form-label {
-    @apply block text-sm font-semibold mb-2;
-    color: var(--color-foreground);
-  }
-
-  /* Input Zoom Prevention (< 768px) & Base Styles */
-  .form-input,
-  .form-select,
-  .form-textarea {
-    @apply block w-full rounded-lg border border-input bg-background text-foreground shadow-sm px-4 py-3 transition-colors duration-200 placeholder:text-muted-foreground;
-    @apply focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none;
-    font-size: 16px;
-    /* Prevents zoom on mobile */
-  }
-
-  @media (min-width: 768px) {
-
-    .form-input,
-    .form-select,
-    .form-textarea {
-      font-size: 0.875rem;
-      /* 14px on desktop if desired, typically standard */
-    }
-  }
-
-  /* Engraved Input Look for Dark Mode */
-  .dark .form-input,
-  .dark .form-select,
-  .dark .form-textarea {
-    background-color: rgba(0, 0, 0, 0.3);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Subtle border for definition */
-  }
-
-  .btn-primary {
-    @apply flex justify-center items-center py-3 px-6 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-    /* Active State for Tactile Feedback */
-    @apply active:scale-95;
-    /* Height adjustment for mobile/desktop handled via padding usually, but enforced height requested? */
-    height: 48px;
-    /* Standard Mobile Touch Target */
-  }
-
-  @media (min-width: 768px) {
-    .btn-primary {
-      height: 56px;
-      /* Desktop height */
-    }
-  }
-
-  /* Sticky Bottom Action Utility */
-  .sticky-bottom-action {
-    position: sticky;
-    bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom);
-    z-index: 40;
-    @apply bg-background/80 backdrop-blur-md border-t border-border p-4;
-  }
-}
-
-/* Charcoal Base #121212 */
---background: 0 0% 7%;
-/* High Emphasis Text #F9FAFB */
---foreground: 210 20% 98%;
-
-/* Level 1 Surface (Card) #1F2937 */
---card: 215 28% 17%;
---card-foreground: 210 20% 98%;
-
-/* Level 2 Surface (Modal/Popover) #374151 */
---popover: 217 19% 27%;
---popover-foreground: 210 20% 98%;
-
-/* Primary Green (Adjusted for Dark Mode contrast) */
---primary: 142.1 70.6% 45.3%;
---primary-foreground: 144.9 80.4% 10%;
-
-/* Secondary/Muted */
---secondary: 215 28% 17%;
---secondary-foreground: 210 20% 98%;
-
---muted: 215 28% 17%;
---muted-foreground: 215 20% 65%;
-/* #A1A1AA or similar */
-
---accent: 215 28% 17%;
---accent-foreground: 210 20% 98%;
-
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 85.7% 97.3%;
-
-/* Borders: Subtle Gray #374151 */
---border: 217 19% 27%;
---input: 217 19% 27%;
---ring: 142.4 71.8% 29.2%;
-
-/* Adaptive Glass - Dark Mode (Deep Obsidian) */
---glass-bg: rgba(30, 30, 30, 0.60);
-/* Or rgba(255, 255, 255, 0.05) based on pref, using requested values */
---glass-border: 1px solid rgba(255, 255, 255, 0.10);
---text-primary: #FFFFFF;
---bg-gradient: radial-gradient(circle at 50% 50%, #172554 0%, #3b0764 50%, #1f2937 100%);
-/* Deep mesh: Midnight Blue/Purple/Charcoal */
---status-bar: #000000;
-}
-
-/* Glass Utility Class */
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: var(--glass-border);
-  will-change: backdrop-filter;
-}
-
-/* Fallback for low-end devices */
-@supports not (backdrop-filter: blur(20px)) {
-  .glass-panel {
-    background: var(--glass-bg-fallback, rgba(20, 20, 20, 0.95));
-  }
-}
-
-/* Mobile Optimizations */
-* {
-  -webkit-tap-highlight-color: transparent;
 }
 
 .dark {
@@ -221,7 +67,6 @@ body {
 
   --muted: 215 28% 17%;
   --muted-foreground: 215 20% 65%;
-  /* #A1A1AA or similar */
 
   --accent: 215 28% 17%;
   --accent-foreground: 210 20% 98%;
@@ -233,6 +78,34 @@ body {
   --border: 217 19% 27%;
   --input: 217 19% 27%;
   --ring: 142.4 71.8% 29.2%;
+
+  /* Adaptive Glass - Dark Mode (Deep Obsidian) */
+  --glass-bg: rgba(30, 30, 30, 0.60);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.10);
+  --text-primary: #FFFFFF;
+  --bg-gradient: radial-gradient(circle at 50% 50%, #172554 0%, #3b0764 50%, #1f2937 100%);
+  --status-bar: #000000;
+}
+
+/* Glass Utility Class */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: var(--glass-border);
+  will-change: backdrop-filter;
+}
+
+/* Fallback for low-end devices */
+@supports not (backdrop-filter: blur(20px)) {
+  .glass-panel {
+    background: var(--glass-bg-fallback, rgba(20, 20, 20, 0.95));
+  }
+}
+
+/* Mobile Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 @theme inline {
@@ -270,14 +143,10 @@ body {
   background-color: var(--color-background);
   background-image: var(--bg-gradient);
   background-attachment: fixed;
-  /* Optional: keeps gradient fixed */
   color: var(--color-foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   min-height: 100dvh;
-  /* Jumping URL Bar Fix */
   overscroll-behavior-y: none;
-  /* Disable rubber-band effect */
-  /* padding-top: var(--nav-padding-top);  Better handled in specific layout containers if needed, global might break full screen */
 }
 
 @layer components {
@@ -324,7 +193,6 @@ body {
     background-color: rgba(0, 0, 0, 0.3);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Subtle border for definition */
   }
 
   .btn-primary {
