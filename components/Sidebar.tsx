@@ -27,7 +27,7 @@ export default function Sidebar({ onLinkClick }: { onLinkClick?: () => void }) {
 
     return (
         <div className="flex flex-col h-full bg-card border-r border-border">
-            <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
+            <div className="flex flex-col flex-grow pt-[calc(1.25rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] overflow-y-auto">
                 <div className="flex items-center justify-between flex-shrink-0 px-4 mb-8">
                     <h1 className="text-2xl font-bold text-primary">After Hours</h1>
                 </div>

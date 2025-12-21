@@ -39,13 +39,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* Banner Removed */}
 
             {/* Mobile Header */}
-            <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card">
+            <div className="md:hidden flex items-center justify-between p-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-border bg-card sticky top-0 z-30">
                 {shouldShowSidebar ? (
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2">
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 -ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
                         <Menu size={24} />
                     </button>
                 ) : (
-                    <div className="w-10"></div> /* Spacer to keep title centered if desired, or just nothing */
+                    <div className="w-10"></div>
                 )}
                 <span className="font-bold text-lg">After Hours</span>
                 <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                 </div>
 
-                <main className={`flex-1 relative ${isAdmin ? 'p-0' : 'p-4 sm:p-6 lg:p-8'}`}>
+                <main className={`flex-1 relative ${isAdmin ? 'p-0' : 'p-4 sm:p-6 lg:p-8 pb-[calc(2rem+env(safe-area-inset-bottom))]'}`}>
                     {!isAdmin && <BackButton />}
                     <div className={isAdmin ? '' : 'mt-12 md:mt-0'}>
                         {children}

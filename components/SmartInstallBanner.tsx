@@ -67,7 +67,7 @@ export default function SmartInstallBanner() {
     if (!showBanner) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-popover text-popover-foreground border-t border-border shadow-lg z-50 animate-in slide-in-from-bottom duration-300 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-popover text-popover-foreground border-t border-border shadow-lg z-50 animate-in slide-in-from-bottom duration-300 md:hidden">
             <div className="flex items-center gap-4">
                 <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-br from-green-500 to-emerald-700 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm">
                     S
@@ -78,13 +78,13 @@ export default function SmartInstallBanner() {
                 </div>
                 <button
                     onClick={handleInstallClick}
-                    className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-full hover:bg-primary/90 transition-colors"
+                    className="flex items-center justify-center min-h-[44px] min-w-[44px] px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-full hover:bg-primary/90 transition-colors"
                 >
                     Install
                 </button>
                 <button
                     onClick={handleDismiss}
-                    className="p-1 text-gray-400 hover:text-gray-600"
+                    className="p-1 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600"
                 >
                     <X className="w-5 h-5" />
                 </button>
