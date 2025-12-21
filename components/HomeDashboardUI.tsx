@@ -31,13 +31,13 @@ export default function HomeDashboardUI({ userName }: { userName: string }) {
     return (
         <div className="w-full max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header Section */}
-            <div className="flex flex-col sm:flex-row justify-between items-end mb-8 gap-4">
-                <div className="text-left">
-                    <h2 className="text-3xl font-bold text-foreground">Welcome back, {userName}! 👋</h2>
-                    <p className="text-muted-foreground mt-1">Here is your upcoming schedule.</p>
+            <div className="flex flex-col sm:flex-row justify-between items-end mb-8 gap-4 w-full overflow-hidden">
+                <div className="text-left w-full">
+                    <h2 className="text-3xl font-bold text-foreground break-words">Welcome back, {userName}! 👋</h2>
+                    <p className="text-muted-foreground mt-1 break-words">Here is your upcoming schedule.</p>
                 </div>
-                <div className="flex gap-3">
-                    <Link href="/events/new" className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition shadow-sm whitespace-nowrap">
+                <div className="flex gap-3 w-full sm:w-auto">
+                    <Link href="/events/new" className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition shadow-sm whitespace-nowrap text-center w-full sm:w-auto">
                         + Create Event
                     </Link>
                 </div>

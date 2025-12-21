@@ -14,8 +14,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ [
 
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-6">
-      <div className="text-center max-w-2xl">
+    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-4 sm:p-6 overflow-x-hidden">
+      <div className="text-center w-full max-w-2xl px-2 sm:px-0">
         <h1 className="text-5xl font-extrabold text-foreground mb-6">
           After <span className="text-primary">Hours</span>
         </h1>
