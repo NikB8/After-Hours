@@ -137,6 +137,9 @@
 
 html {
   scroll-padding-top: 80px;
+  overflow-x: hidden;
+  /* Prevent horizontal expansion */
+  width: 100%;
 }
 
 body {
@@ -146,7 +149,13 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  /* Ensure containment */
   overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  /* Prevent horizontal elastic scrolling */
+  overflow-x: hidden;
 }
 
 @layer components {
