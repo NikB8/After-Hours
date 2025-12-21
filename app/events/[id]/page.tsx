@@ -16,18 +16,21 @@ import { auth } from '@/auth';
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
 
-    const session = await auth();
+    // Parallelize Auth and Event fetching
+    const [session, event] = await Promise.all([
+        auth(),
+        prisma.event.findUnique({
+            where: { id },
+            include: {
+                organizer: true,
+                participants: true,
+            },
+        })
+    ]);
+
     const currentUser = session?.user?.email
         ? await prisma.user.findUnique({ where: { email: session.user.email } })
         : null;
-
-    const event = await prisma.event.findUnique({
-        where: { id },
-        include: {
-            organizer: true,
-            participants: true,
-        },
-    });
 
     if (!event) {
         notFound();

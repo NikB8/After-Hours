@@ -61,17 +61,24 @@ export default function ParticipantCard({ eventId, referrerId }: { eventId: stri
                     if (participant) {
                         setUserStatus('Confirmed');
 
-                        // Fetch financial status
-                        fetch(`/api/v1/events/${eventId}/participant/me`, {
+                        // Prepare promises for parallel execution
+                        const financePromise = fetch(`/api/v1/events/${eventId}/participant/me`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ user_email: viewerEmail })
-                        }).then(r => r.json()).then(setFinances).catch(console.error);
+                        }).then(r => r.json());
 
-                        // Fetch UPI if event completed
-                        if (data.status === 'Completed') {
-                            fetch(`/api/v1/events/${eventId}/organizer_upi`).then(r => r.json()).then(setUpiDetails).catch(console.error);
-                        }
+                        const upiPromise = data.status === 'Completed'
+                            ? fetch(`/api/v1/events/${eventId}/organizer_upi`).then(r => r.json())
+                            : Promise.resolve(null);
+
+                        // Execute in parallel
+                        Promise.all([financePromise, upiPromise])
+                            .then(([financeData, upiData]) => {
+                                if (financeData) setFinances(financeData);
+                                if (upiData) setUpiDetails(upiData);
+                            })
+                            .catch(console.error);
 
                     } else {
                         setUserStatus('None');
