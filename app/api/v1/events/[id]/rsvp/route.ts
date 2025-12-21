@@ -7,8 +7,10 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: eventId } = await params;
-        const body = await request.json();
+        const [{ id: eventId }, body] = await Promise.all([
+            params,
+            request.json()
+        ]);
         const { user_email, status, referred_by_id, transport_mode, car_seats } = body; // Mock auth
 
         if (!user_email) {
@@ -38,30 +40,28 @@ export async function POST(
 
         // Transaction to ensure data integrity
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Get event details and current participant count
-            const event = await tx.event.findUnique({
-                where: { id: eventId },
-                include: {
-                    participants: {
-                        where: { status: 'Confirmed' },
+            // 1. Parallel Fetch: Event Details & Participant Status
+            const [event, existingParticipant] = await Promise.all([
+                tx.event.findUnique({
+                    where: { id: eventId },
+                    include: {
+                        participants: {
+                            where: { status: 'Confirmed' },
+                        },
+                        organizer: { select: { id: true, email: true } } // Fetch email too for notify optimization?
                     },
-                    organizer: { select: { id: true } }
-                },
-            });
-
-            if (!event) {
-                throw new Error('Event not found');
-            }
-
-            // 2. Check if user is already a participant
-            const existingParticipant = await tx.participant.findUnique({
-                where: {
-                    event_id_user_id: {
-                        event_id: eventId,
-                        user_id: user.id,
+                }),
+                tx.participant.findUnique({
+                    where: {
+                        event_id_user_id: {
+                            event_id: eventId,
+                            user_id: user.id,
+                        },
                     },
-                },
-            });
+                })
+            ]);
+
+            if (!event) throw new Error('Event not found');
 
             // 3. Determine new status
             let newStatus = status;

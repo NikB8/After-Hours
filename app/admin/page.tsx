@@ -10,7 +10,16 @@ import {
     TrendingUp,
     AlertTriangle
 } from 'lucide-react';
-import { GrowthChart, FinancialChart } from '@/components/AdminCharts';
+import dynamic from 'next/dynamic';
+
+const GrowthChart = dynamic(() => import('@/components/AdminCharts').then(mod => mod.GrowthChart), {
+    loading: () => <div className="h-72 w-full bg-muted animate-pulse rounded-xl" />,
+    ssr: false
+});
+const FinancialChart = dynamic(() => import('@/components/AdminCharts').then(mod => mod.FinancialChart), {
+    loading: () => <div className="h-72 w-full bg-muted animate-pulse rounded-xl" />,
+    ssr: false
+});
 
 interface KPIs {
     total_users: number;

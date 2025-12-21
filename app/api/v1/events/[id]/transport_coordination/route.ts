@@ -7,28 +7,29 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: eventId } = await params;
-        const session = await auth();
+        const [{ id: eventId }, session] = await Promise.all([
+            params,
+            auth()
+        ]);
 
         // 1. Access Control: Must be authenticated
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // 2. Fetch Event & Participant status
-        // User must be 'Confirmed' to see this (or admin)
-        const viewer = await prisma.participant.findUnique({
-            where: {
-                event_id_user_id: {
-                    event_id: eventId,
-                    user_id: session.user.id
+        // 2. Parallel Fetch: Viewer Status & Event Details
+        const [viewer, event] = await Promise.all([
+            prisma.participant.findUnique({
+                where: {
+                    event_id_user_id: {
+                        event_id: eventId,
+                        user_id: session.user.id
+                    }
                 }
-            }
-        });
+            }),
+            prisma.event.findUnique({ where: { id: eventId } })
+        ]);
 
-        // Allow if Confirmed or Organizer (checked via event relation?) or Admin
-        // For simplicity: If not confirmed and not organizer, deny.
-        const event = await prisma.event.findUnique({ where: { id: eventId } });
         if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
         const isOrganizer = event.organizer_id === session.user.id;
