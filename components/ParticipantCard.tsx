@@ -90,10 +90,18 @@ export default function ParticipantCard({ eventId, referrerId }: { eventId: stri
         if (!confirm("Are you sure you have made the payment?")) return;
         setActionLoading(true);
         try {
-            const res = await fetch(`/api/v1/events/${eventId}/participant/notify_payment`, {
+            const res = await fetch(`/api/v1/events/${eventId}/finance/actions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_email: viewerEmail })
+                body: JSON.stringify({
+                    action: 'mark_self_paid',
+                    // The backend finds the participant by session userId+eventId, but pass participant_id if we have it or null?
+                    // finance/actions route uses session.user.id and eventId to lookup, so we don't strictly need participant_id in body for self-mark?
+                    // Correction: Looking at finance/actions code, it DOES use participant_id if marking *someone else* probably, but for mark_self_paid line 35 of the route: 
+                    // "where: { event_id_user_id: { event_id: eventId, user_id: userId } }"
+                    // So it does NOT rely on participant_id from body for 'mark_self_paid'.
+                    // So we can send action and event ID (in URL).
+                })
             });
             if (res.ok) {
                 window.location.reload();
