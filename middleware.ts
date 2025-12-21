@@ -9,10 +9,17 @@ export default auth((req) => {
     const { nextUrl } = req;
 
     if (nextUrl.pathname.startsWith('/admin')) {
+        console.log('Middleware Admin Check:', {
+            isLoggedIn,
+            email: req.auth?.user?.email,
+            isSuperAdmin: (req.auth?.user as any)?.is_super_admin,
+            roles: userRoles
+        });
+
         if (!isLoggedIn) {
             return NextResponse.redirect(new URL(`/?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl));
         }
-        if (!isSystemAdmin) {
+        if (!isSystemAdmin && !(req.auth?.user as any)?.is_super_admin) {
             return NextResponse.redirect(new URL(`/?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl));
         }
     }
