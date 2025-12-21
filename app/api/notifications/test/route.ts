@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
-import { notifyUser } from '@/lib/notifications';
+import { notifyUser, NotificationType } from '@/lib/notifications';
 
 export async function POST(req: Request) {
     const session = await auth();
@@ -11,13 +11,13 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     // Trigger test notification to self
-    await notifyUser(
-        user.id,
-        'Test Notification',
-        'This is a test notification from the Master Notification System.',
-        '/profile',
-        'SYSTEM'
-    );
+    await notifyUser({
+        recipientId: user.id,
+        title: 'Test Notification',
+        message: 'This is a test notification from the Master Notification System.',
+        url: '/profile',
+        type: NotificationType.SYSTEM
+    });
 
     return NextResponse.json({ success: true });
 }

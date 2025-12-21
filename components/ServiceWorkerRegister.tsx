@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 export default function ServiceWorkerRegister() {
     useEffect(() => {
-        if ('serviceWorker' in navigator && window.workbox !== undefined) {
+        if ('serviceWorker' in navigator && (window as any).workbox !== undefined) {
             // Next.js PWA plugins might handle this, but if we are doing manual VAPID:
         }
 
