@@ -57,8 +57,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             try {
                 if (user) {
                     token.id = user.id;
-                    // @ts-expect-error is_super_admin not in default User type
-                    token.is_super_admin = user.is_super_admin;
+
+                    // Fetch latest User Data from DB to ensure custom fields like is_super_admin are present
+                    // (Adapter User object might differ or be cached)
+                    try {
+                        const dbUser = await prisma.user.findUnique({
+                            where: { id: user.id },
+                            select: { is_super_admin: true }
+                        });
+
+                        token.is_super_admin = dbUser?.is_super_admin || false;
+                        console.log(`DEBUG: Fetched is_super_admin for ${user.email || user.id}:`, token.is_super_admin);
+                    } catch (e) {
+                        console.error("DEBUG: Failed to fetch user status", e);
+                        // @ts-ignore fallback
+                        token.is_super_admin = (user as any).is_super_admin || false;
+                    }
 
                     // Fetch Roles locally if new login
                     try {
