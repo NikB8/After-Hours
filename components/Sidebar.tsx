@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { Home, Calendar, Users, Settings, Shield, LogOut } from 'lucide-react';
 import { useSession, signOut } from "next-auth/react";
 
+import NotificationBell from '@/components/NotificationBell';
+
 export default function Sidebar({ onLinkClick }: { onLinkClick?: () => void }) {
     const pathname = usePathname();
     const { data: session } = useSession();
@@ -26,8 +28,9 @@ export default function Sidebar({ onLinkClick }: { onLinkClick?: () => void }) {
     return (
         <div className="flex flex-col h-full bg-card border-r border-border">
             <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
-                <div className="flex items-center flex-shrink-0 px-4 mb-8">
+                <div className="flex items-center justify-between flex-shrink-0 px-4 mb-8">
                     <h1 className="text-2xl font-bold text-primary">After Hours</h1>
+                    <NotificationBell />
                 </div>
                 <div className="flex-grow flex flex-col">
                     <nav className="flex-1 px-2 space-y-1">

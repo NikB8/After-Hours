@@ -3,8 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import { Search, CheckCircle, AlertCircle } from 'lucide-react';
+import { useToast } from '@/components/providers/ToastProvider';
 
 export default function AdminFinancePage() {
+    const { showToast } = useToast();
     // Ideally we'd have a specific list-debtors API, but we can reuse /admin/users or a new endpoint. 
     // For simplicity given the scope, I'll create a lightweight fetch here or assume we have a way to get debtors.
     // Actually, I'll implement a simplified fetch logic or mock it if no specific list endpoint exists.
@@ -52,10 +54,10 @@ export default function AdminFinancePage() {
             });
 
             if (res.ok) {
-                alert("Payment Overridden. Check Audit Log.");
+                showToast("Payment Overridden. Check Audit Log.", 'success');
                 fetchOutstanding();
             } else {
-                alert("Failed to override.");
+                showToast("Failed to override.", 'error');
             }
         } catch (e) {
             console.error(e);

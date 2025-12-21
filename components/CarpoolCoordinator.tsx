@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/components/providers/ToastProvider';
 
 type Participant = {
     user: { id: string; email: string };
@@ -18,6 +19,7 @@ type LogisticsData = {
 };
 
 export default function CarpoolCoordinator({ eventId, userEmail }: { eventId: string; userEmail: string }) {
+    const { showToast } = useToast();
     const [data, setData] = useState<LogisticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [mode, setMode] = useState('Independent');
@@ -67,8 +69,10 @@ export default function CarpoolCoordinator({ eventId, userEmail }: { eventId: st
                 }),
             });
             fetchLogistics();
+            showToast('Transport status updated', 'success');
         } catch (error) {
             console.error('Error updating logistics:', error);
+            showToast('Failed to update status', 'error');
         } finally {
             setUpdating(false);
         }
@@ -87,12 +91,14 @@ export default function CarpoolCoordinator({ eventId, userEmail }: { eventId: st
             });
             if (res.ok) {
                 fetchLogistics();
+                showToast('Rider assigned successfully', 'success');
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to assign rider');
+                showToast(err.error || 'Failed to assign rider', 'error');
             }
         } catch (error) {
             console.error('Error assigning rider:', error);
+            showToast('Error assigning rider', 'error');
         } finally {
             setAssigning(null);
         }
@@ -208,7 +214,7 @@ export default function CarpoolCoordinator({ eventId, userEmail }: { eventId: st
                         <ul className="mt-2 space-y-2">
                             {data.riders.map((r, i) => {
                                 const isAssigned = !!r.assigned_driver_email;
-                                if (isAssigned) return null; // Don't show assigned riders in the "Needs a Ride" list (optional design choice, or show them differently)
+                                if (isAssigned) return null; // Don't show assigned riders in the "Needs a Ride" list
 
                                 return (
                                     <li key={i} className="text-sm bg-yellow-50 p-2 rounded border border-yellow-100 flex justify-between items-center">

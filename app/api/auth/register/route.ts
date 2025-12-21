@@ -87,9 +87,13 @@ export async function POST(req: Request) {
             user: { id: user.id, email: user.email, name: user.name },
         });
     } catch (error) {
-        console.error("Registration error:", error);
+        console.error("Registration error details:", error);
         return NextResponse.json(
-            { error: "Internal Server Error" },
+            {
+                error: "Internal Server Error",
+                details: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined
+            },
             { status: 500 }
         );
     }

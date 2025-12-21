@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import ProfilePersonal from '@/components/ProfilePersonal';
 import ProfileSecurity from '@/components/ProfileSecurity';
 import ProfileHistory from '@/components/ProfileHistory';
+import PermissionToggle from '@/components/PermissionToggle';
+import NotificationTest from '@/components/NotificationTest';
+import PushSettingsToggle from '@/components/PushSettingsToggle';
 
 export default function ProfilePage() {
     const [user, setUser] = useState<any>(null);
@@ -48,9 +51,24 @@ export default function ProfilePage() {
             <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold text-foreground">Your Profile</h1>
+                    <PermissionToggle />
+                </div>
+
+                <div className="md:hidden">
+                    <NotificationTest />
                 </div>
 
                 <ProfilePersonal user={user} />
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">
+                            Notification Settings
+                        </h3>
+                    </div>
+                    <div className="px-4 py-5 sm:p-6">
+                        <PushSettingsToggle />
+                    </div>
+                </div>
                 <ProfileHistory events={user.past_events} />
                 <ProfileSecurity userEmail={user.email} />
             </div>

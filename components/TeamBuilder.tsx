@@ -8,7 +8,12 @@ type Participant = {
     team_name: string | null;
 };
 
+import { useToast } from '@/components/providers/ToastProvider';
+
+// ... imports
+
 export default function TeamBuilder({ eventId, userEmail, userId, isOrganizer }: { eventId: string; userEmail: string; userId: string; isOrganizer: boolean }) {
+    const { showToast } = useToast();
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -26,7 +31,7 @@ export default function TeamBuilder({ eventId, userEmail, userId, isOrganizer }:
             if (Array.isArray(data)) {
                 setParticipants(data);
                 // Discover any existing teams not in default list
-                const existingTeams = new Set(data.map(p => p.team_name).filter(Boolean) as string[]);
+                const existingTeams = new Set(data.map((p: any) => p.team_name).filter(Boolean) as string[]);
                 setTeams(prev => Array.from(new Set([...prev, ...existingTeams])));
             } else {
                 console.error('Failed to load participants:', data);
@@ -52,9 +57,11 @@ export default function TeamBuilder({ eventId, userEmail, userId, isOrganizer }:
         setNewTeamName('');
     };
 
+    // ... inside handleSave ...
     const handleSave = async () => {
         setSaving(true);
         try {
+            // ... assignment logic ...
             const assignments = participants.map((p) => ({
                 participant_id: p.id,
                 team_name: p.team_name,
@@ -70,12 +77,13 @@ export default function TeamBuilder({ eventId, userEmail, userId, isOrganizer }:
             });
 
             if (res.ok) {
-                alert('Teams saved successfully!');
+                showToast('Teams saved successfully!', 'success');
             } else {
-                alert('Failed to save teams');
+                showToast('Failed to save teams', 'error');
             }
         } catch (error) {
             console.error('Error saving teams:', error);
+            showToast('Error saving teams', 'error');
         } finally {
             setSaving(false);
         }
@@ -87,22 +95,23 @@ export default function TeamBuilder({ eventId, userEmail, userId, isOrganizer }:
 
     return (
         <div className="bg-card p-6 rounded-xl shadow-md border border-border mt-6">
+
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h3 className="text-lg font-semibold text-foreground">⚔️ Team Builder</h3>
                 {isOrganizer && (
-                    <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
                         <input
                             type="text"
                             placeholder="New Team Name"
                             value={newTeamName}
                             onChange={(e) => setNewTeamName(e.target.value)}
-                            className="bg-background border border-input rounded px-2 py-1 text-sm flex-1"
+                            className="bg-background border border-input rounded px-2 py-1 text-sm flex-1 min-w-[120px]"
                         />
                         <button onClick={addTeam} className="px-3 py-1 bg-muted text-foreground rounded hover:bg-muted/80 text-sm whitespace-nowrap">+ Add</button>
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 ml-2"
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
                         >
                             {saving ? 'Saving...' : 'Save Teams'}
                         </button>

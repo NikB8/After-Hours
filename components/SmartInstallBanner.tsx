@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { X, Share } from 'lucide-react';
+import { useToast } from '@/components/providers/ToastProvider';
 
 export default function SmartInstallBanner() {
+    const { showToast } = useToast();
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showBanner, setShowBanner] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
@@ -51,7 +53,7 @@ export default function SmartInstallBanner() {
             }
             setDeferredPrompt(null);
         } else if (isIOS) {
-            alert("To install: tap the Share button below and select 'Add to Home Screen'.");
+            showToast("To install: tap the Share button below and select 'Add to Home Screen'.", 'info');
         }
     };
 

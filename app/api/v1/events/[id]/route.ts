@@ -58,7 +58,7 @@ export async function PATCH(
         // 3. Fetch Existing Event
         const existingEvent = await prisma.event.findUnique({
             where: { id },
-            include: { organizer: true }
+            // include: { organizer: true } // Not needed if we check organizer_id directly
         });
 
         if (!existingEvent) {
@@ -66,8 +66,11 @@ export async function PATCH(
         }
 
         // 4. Authorization Check: requester must be the organizer OR an admin
-        const isOrganizer = existingEvent.organizer.email === session.user.email;
-        const isAdmin = requestingUser.is_super_admin;
+        // Use ID comparison (Reliable) instead of Email (Case-sensitive/mutable)
+        const isOrganizer = existingEvent.organizer_id === session.user.id;
+
+        // @ts-ignore
+        const isAdmin = session.user.is_super_admin || false;
 
         if (!isOrganizer && !isAdmin) {
             return NextResponse.json({ error: 'Forbidden: Only the organizer or an admin can edit this event' }, { status: 403 });

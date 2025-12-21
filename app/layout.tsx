@@ -32,6 +32,7 @@ export const viewport = {
   viewportFit: "cover",
 };
 
+import { ToastProvider } from "@/components/providers/ToastProvider";
 import Providers from "@/components/Providers";
 import AppShell from "@/components/AppShell";
 import DynamicMetaTheme from "@/components/DynamicMetaTheme";
@@ -43,16 +44,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           <DynamicMetaTheme />
-          <AppShell>
-            {children}
-          </AppShell>
+          <ToastProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </ToastProvider>
         </Providers>
-      </body>
-    </html>
+      </body >
+    </html >
   );
 }

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import LoginModal from '@/components/LoginModal';
+import { useToast } from '@/components/providers/ToastProvider';
 
 interface PublicEventData {
     id: string;
@@ -30,6 +31,7 @@ interface PublicEventData {
 }
 
 export default function ParticipantCard({ eventId, referrerId }: { eventId: string, referrerId?: string }) {
+    const { showToast } = useToast();
     const [event, setEvent] = useState<PublicEventData | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -96,7 +98,7 @@ export default function ParticipantCard({ eventId, referrerId }: { eventId: stri
             if (res.ok) {
                 window.location.reload();
             } else {
-                alert('Failed to update status');
+                showToast('Failed to update status', 'error');
             }
         } catch (e) { console.error(e); }
         finally { setActionLoading(false); }
@@ -122,11 +124,11 @@ export default function ParticipantCard({ eventId, referrerId }: { eventId: stri
                 window.location.reload();
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to join');
+                showToast(err.error || 'Failed to join', 'error');
             }
         } catch (error) {
             console.error(error);
-            alert('Something went wrong');
+            showToast('Something went wrong', 'error');
         } finally {
             setActionLoading(false);
         }

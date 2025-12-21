@@ -247,8 +247,9 @@ export default function EventForm({ userEmail, initialData, eventId, isEditMode 
                             min="0"
                             step="0.01"
                             required
-                            value={formData.estimated_cost}
+                            value={formData.estimated_cost === 0 ? '' : formData.estimated_cost}
                             onChange={handleChange}
+                            placeholder="0"
                             className="form-input pl-7"
                         />
                     </div>
@@ -288,7 +289,7 @@ export default function EventForm({ userEmail, initialData, eventId, isEditMode 
                                     name="car_seats"
                                     min="1"
                                     required
-                                    value={formData.car_seats || ''}
+                                    value={formData.car_seats === 0 ? '' : formData.car_seats}
                                     onChange={handleChange}
                                     placeholder="Number of passengers you can take"
                                     className="form-input"

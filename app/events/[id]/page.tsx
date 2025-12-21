@@ -71,25 +71,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     return (
         <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto space-y-6">
-                {/* Hero Image Section */}
-                <div
-                    className="relative h-64 md:h-96 w-full rounded-xl overflow-hidden shadow-sm border border-border"
-                    style={{ viewTransitionName: `event-image-${event.id}` } as React.CSSProperties}
-                >
-                    {(event as any).image_url ? (
-                        <img
-                            src={(event as any).image_url}
-                            alt={(event as any).title}
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                            <Calendar className="w-20 h-20 text-primary/40" />
-                        </div>
-                    )}
 
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent h-32" />
-                </div>
 
                 {/* Actions Bar */}
                 {(isOrganizer || isSuperAdmin) && (

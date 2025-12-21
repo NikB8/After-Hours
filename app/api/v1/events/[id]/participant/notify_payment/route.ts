@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { notifyUser, NotificationType } from '@/lib/notifications';
 
 export async function POST(
     request: Request,
@@ -32,7 +33,25 @@ export async function POST(
             }
         });
 
+        // NOTIFICATION
+        // Fire and forget, or await to ensure delivery before response?
+        // Awaiting best for serverless reliability.
+        const event = await prisma.event.findUnique({ where: { id: eventId }, select: { organizer_id: true, sport: true } });
+        if (event) {
+            // We don't await this strictly to speed up response? No, safer to await.
+            await notifyUser({
+                recipientId: event.organizer_id,
+                type: NotificationType.PAYMENT,
+                title: 'Payment Claimed',
+                message: `${user.name || user.email} marked payment as sent for ${event.sport}`,
+                url: `/events/${eventId}/manage`, // Creator Dashboard
+                triggerUserId: user.id
+            });
+        }
+
         return NextResponse.json({ success: true, status: 'Pending_Confirmation' });
+
+
 
     } catch (error) {
         console.error('Error notifying payment:', error);

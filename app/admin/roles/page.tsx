@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Shield, Plus, Key } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/providers/ToastProvider';
 
 export default function RolesPage() {
+    const { showToast } = useToast();
     const [roles, setRoles] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [newRoleData, setNewRoleData] = useState({ name: '', description: '' });
@@ -37,8 +39,9 @@ export default function RolesPage() {
                 setNewRoleData({ name: '', description: '' });
                 setIsCreating(false);
                 fetchRoles();
+                showToast('Role created successfully', 'success');
             } else {
-                alert('Failed to create role');
+                showToast('Failed to create role', 'error');
             }
         } catch (e) {
             console.error(e);

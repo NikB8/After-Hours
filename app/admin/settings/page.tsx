@@ -3,8 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import { Settings, Save } from 'lucide-react';
+import { useToast } from '@/components/providers/ToastProvider';
 
 export default function AdminSettingsPage() {
+    const { showToast } = useToast();
     const [settings, setSettings] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     // Local state for edits
@@ -32,9 +34,9 @@ export default function AdminSettingsPage() {
 
             if (res.ok) {
                 setSettings(prev => ({ ...prev, [key]: value }));
-                alert(`Saved ${key}`);
+                showToast(`Saved ${key}`, 'success');
             } else {
-                alert('Failed to save');
+                showToast('Failed to save', 'error');
             }
         } catch (e) {
             console.error(e);

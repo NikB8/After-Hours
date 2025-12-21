@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/components/providers/ToastProvider';
 
 type Participant = {
     id: string;
@@ -22,6 +23,7 @@ type EventFinance = {
 };
 
 export default function FinancialHub({ eventId, userId }: { eventId: string; userId: string }) {
+    const { showToast } = useToast();
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [eventData, setEventData] = useState<EventFinance | null>(null);
     const [loading, setLoading] = useState(true);
@@ -58,11 +60,13 @@ export default function FinancialHub({ eventId, userId }: { eventId: string; use
             });
             if (res.ok) {
                 fetchFinanceStatus(); // Refresh UI
+                showToast('Action successful!', 'success');
             } else {
-                alert('Action failed');
+                showToast('Action failed', 'error');
             }
         } catch (error) {
             console.error('Action error:', error);
+            showToast('Something went wrong', 'error');
         }
     };
 

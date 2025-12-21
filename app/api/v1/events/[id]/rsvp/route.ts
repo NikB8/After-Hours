@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { notifyUser, NotificationType } from '@/lib/notifications';
 
 export async function POST(
     request: Request,
@@ -44,6 +45,7 @@ export async function POST(
                     participants: {
                         where: { status: 'Confirmed' },
                     },
+                    organizer: { select: { id: true } }
                 },
             });
 
@@ -114,6 +116,38 @@ export async function POST(
                 });
             }
         });
+
+
+
+        // NOTIFICATION LOGIC (Fire and forget)
+        // We need the event and user details, which we have locally or can derive.
+        // But 'result' from transaction might depend on path.
+        // To be safe, we can just use the data we have.
+        // We know 'eventId' and 'user.id'. We need organizerId which we fetched inside tx but didn't return.
+        // Actually, let's just fetch it lightly or we should have returned it from tx.
+        // Better: Refactor tx to return needed data or just do a quick lookup if performance allows.
+        // Optimization: modify tx to return the organizerId.
+
+        // Wait, I can't easily modify the 'result' type without seeing what prisma returns exacty.
+        // But wait, I updated the event fetch includes above. 
+        // I can just assign a variable outside tx scope? No, scope issue.
+        // I will just do a fire-and-forget lookup or assume I can get it.
+        // Actually, easiest is to just fetch the event organizer separately *after* or *before*?
+        // Let's do a separate fetch for notification to avoid complicating the critical transaction path logic too much.
+        // Or better yet, just look it up.
+        (async () => {
+            const evt = await prisma.event.findUnique({ where: { id: eventId }, select: { organizer_id: true, sport: true } });
+            if (evt && evt.organizer_id !== user.id) {
+                await notifyUser({
+                    recipientId: evt.organizer_id,
+                    type: NotificationType.RSVP,
+                    title: 'New RSVP',
+                    message: `${user.name || user.email} is ${status || 'Update'} for ${evt.sport}`,
+                    url: `/events/${eventId}`,
+                    triggerUserId: user.id
+                });
+            }
+        })();
 
         return NextResponse.json(result);
     } catch (error: any) {

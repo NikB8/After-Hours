@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 import SmartInstallBanner from './SmartInstallBanner';
+import NotificationBell from './NotificationBell';
 import { useEffect } from 'react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -47,7 +48,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <div className="w-10"></div> /* Spacer to keep title centered if desired, or just nothing */
                 )}
                 <span className="font-bold text-lg">After Hours</span>
-                <ThemeToggle />
+                <div className="flex items-center gap-2">
+                    <NotificationBell />
+                    <ThemeToggle />
+                </div>
             </div>
 
             {/* Sidebar (Desktop) */}
@@ -61,7 +65,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div className={`${shouldShowSidebar ? 'md:pl-64' : ''} flex flex-col min-h-screen`}>
                 {/* Desktop Header Actions */}
                 <div className="hidden md:flex justify-end p-4 items-center gap-4 absolute top-0 right-0 z-10 pointer-events-none">
-                    <div className="pointer-events-auto">
+                    <div className="pointer-events-auto flex items-center gap-4">
+                        <NotificationBell />
                         <ThemeToggle />
                     </div>
                 </div>

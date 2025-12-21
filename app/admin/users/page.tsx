@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, Shield, X, Save, Plus, Trash2, UserPlus, FileSpreadsheet } from 'lucide-react';
+import { useToast } from '@/components/providers/ToastProvider';
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -179,6 +180,7 @@ export default function AdminUsersPage() {
 }
 
 function UserDetailModal({ user, onClose, onUpdate }: { user: any, onClose: () => void, onUpdate: () => void }) {
+    const { showToast } = useToast();
     const [activeTab, setActiveTab] = useState<'profile' | 'roles' | 'history'>('profile');
     const [availableRoles, setAvailableRoles] = useState<any[]>([]);
 
@@ -204,7 +206,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: any, onClose: () =
             body: JSON.stringify(formData)
         });
         onUpdate();
-        alert('Profile Updated');
+        showToast('Profile Updated', 'success');
     };
 
     const handleAddRole = async (roleId: string) => {
@@ -321,6 +323,7 @@ function UserDetailModal({ user, onClose, onUpdate }: { user: any, onClose: () =
 
 
 function CreateUserModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
+    const { showToast } = useToast();
     const [formData, setFormData] = useState({ name: '', email: '', password: '', company_domain: '' });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -332,11 +335,11 @@ function CreateUserModal({ onClose, onSuccess }: { onClose: () => void, onSucces
                 body: JSON.stringify(formData)
             });
             if (res.ok) {
-                alert('User created!');
+                showToast('User created!', 'success');
                 onSuccess();
             } else {
                 const err = await res.json();
-                alert('Error: ' + err.error);
+                showToast('Error: ' + err.error, 'error');
             }
         } catch (e) { console.error(e); }
     };

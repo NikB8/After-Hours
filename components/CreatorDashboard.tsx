@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/components/providers/ToastProvider';
 import { useRouter } from 'next/navigation';
 import {
     Users,
@@ -64,6 +65,7 @@ interface DashboardData {
 }
 
 export default function CreatorDashboard({ eventId }: { eventId: string }) {
+    const { showToast } = useToast();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'rsvp' | 'logistics' | 'finance'>('rsvp');
     const [data, setData] = useState<DashboardData | null>(null);
@@ -103,7 +105,10 @@ export default function CreatorDashboard({ eventId }: { eventId: string }) {
     }, [eventId]);
 
     const handleSettle = async () => {
-        if (!settleAmount || isNaN(Number(settleAmount))) return alert('Please enter a valid amount');
+        if (!settleAmount || isNaN(Number(settleAmount))) {
+            showToast('Please enter a valid amount', 'error');
+            return;
+        }
         setSubmittingSettle(true);
         try {
             const res = await fetch(`/api/v1/events/${eventId}/settle_final`, {
@@ -117,8 +122,9 @@ export default function CreatorDashboard({ eventId }: { eventId: string }) {
             if (res.ok) {
                 fetchData();
                 setSettleAmount('');
+                showToast('Event settled successfully', 'success');
             } else {
-                alert('Failed to settle event');
+                showToast('Failed to settle event', 'error');
             }
         } catch (e) { console.error(e); }
         finally { setSubmittingSettle(false); }
@@ -141,7 +147,7 @@ export default function CreatorDashboard({ eventId }: { eventId: string }) {
             if (!res.ok) {
                 const err = await res.json();
                 console.error('Payment update failed:', err);
-                alert('Failed to update payment status: ' + (err.error || 'Unknown error'));
+                showToast('Failed to update payment status: ' + (err.error || 'Unknown error'), 'error');
                 return;
             }
 
@@ -151,7 +157,7 @@ export default function CreatorDashboard({ eventId }: { eventId: string }) {
             if (showModal) openModal(showModal);
         } catch (e) {
             console.error(e);
-            alert('Error updating payment status');
+            showToast('Error updating payment status', 'error');
         }
     };
 
