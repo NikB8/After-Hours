@@ -17,19 +17,19 @@ export async function GET(req: Request) {
     try {
         const [notifications, total, unreadCount] = await Promise.all([
             prisma.notification.findMany({
-                where: { recipient_id: user.id },
+                where: { recipientId: user.id },
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit,
                 include: {
-                    trigger_user: {
+                    triggerUser: {
                         select: { name: true, image: true }
                     }
                 }
             }),
-            prisma.notification.count({ where: { recipient_id: user.id } }),
+            prisma.notification.count({ where: { recipientId: user.id } }),
             prisma.notification.count({
-                where: { recipient_id: user.id, is_read: false }
+                where: { recipientId: user.id, isRead: false }
             }),
         ]);
 

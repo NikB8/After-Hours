@@ -1,7 +1,19 @@
 import { PrismaClient } from '@prisma/client';
-// FORCE LOAD .env to bypass Next.js truncation bug
-// Note: Manual dotenv loading via path is removed as it breaks Edge Runtime (Middleware).
-// Next.js automatically loads .env files.
+
+// FORCE LOAD .env to ensure Next.js finds it despite monorepo root detection issues
+// Wrapped in try/catch and require to avoid breaking Edge Runtime (Middleware)
+try {
+    if (process.env.NODE_ENV !== 'production' && typeof window === 'undefined') {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const path = require('path');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const dotenv = require('dotenv');
+        const envPath = path.resolve(process.cwd(), '.env');
+        dotenv.config({ path: envPath, override: true });
+    }
+} catch (e) {
+    // Ignore errors in environments where path/dotenv/process.cwd are unavailable
+}
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 

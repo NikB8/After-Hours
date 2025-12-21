@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { notifyUser, NotificationType } from '@/lib/notifications';
 
 export async function POST(
     request: Request,
@@ -21,12 +22,13 @@ export async function POST(
         // Fetch Event to check authorization
         const event = await prisma.event.findUnique({
             where: { id: eventId },
-            select: { organizer_id: true }
+            select: { organizer_id: true, sport: true, start_time: true }
         });
 
         if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
         const isOrganizer = event.organizer_id === userId;
+        const dateStr = new Date(event.start_time).toLocaleDateString();
 
         if (action === 'mark_self_paid') {
             // User marking themselves
@@ -45,18 +47,39 @@ export async function POST(
                 }
             });
 
+            // NOTIFICATION: Inform organizer
+            await notifyUser({
+                recipientId: event.organizer_id,
+                type: NotificationType.PAYMENT,
+                title: 'Payment marked as paid',
+                message: `Payment sent: ${session.user.name || session.user.email} for ${event.sport} on ${dateStr}.`,
+                url: `/events/${eventId}/manage`,
+                triggerUserId: userId
+            });
+
             return NextResponse.json({ message: 'Marked as In Review' });
         }
 
         if (action === 'confirm_payment') {
             if (!isOrganizer) return NextResponse.json({ error: 'Only organizer can confirm' }, { status: 403 });
 
-            await prisma.participant.update({
+            const updatedParticipant = await prisma.participant.update({
                 where: { id: participant_id },
                 data: {
                     payment_status: 'Paid',
                     is_paid: true
-                }
+                },
+                include: { user: true }
+            });
+
+            // NOTIFICATION: Inform participant
+            await notifyUser({
+                recipientId: updatedParticipant.user_id,
+                type: NotificationType.PAYMENT,
+                title: 'Payment Confirmed',
+                message: `${event.sport} (${dateStr}): Payment confirmed.`,
+                url: `/events/${eventId}`,
+                triggerUserId: userId
             });
 
             // Check if ALL confirmed participants are paid -> Settle Event

@@ -19,9 +19,9 @@ export async function PATCH(req: Request) {
         await prisma.notification.updateMany({
             where: {
                 id: { in: ids },
-                recipient_id: user.id
+                recipientId: user.id
             },
-            data: { is_read: true }
+            data: { isRead: true }
         });
 
         return NextResponse.json({ success: true });

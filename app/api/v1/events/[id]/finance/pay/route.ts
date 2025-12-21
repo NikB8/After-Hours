@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { notifyUser } from '@/lib/notifications';
+import { notifyUser, NotificationType } from '@/lib/notifications';
 
 export async function POST(
     request: Request,
@@ -92,23 +92,21 @@ export async function POST(
             return evt;
         });
 
-        // NOTIFICATION (Async)
-        (async () => {
-            if (participant && participant.user_id) {
-                const message = is_paid
-                    ? `Payment confirmed for ${event.sport}`
-                    : `Payment marked as unpaid for ${event.sport}`;
+        // NOTIFICATION
+        if (participant && participant.user_id) {
+            const message = is_paid
+                ? `${event.sport}: Payment confirmed by organizer.`
+                : `${event.sport}: Marked unpaid by organizer.`;
 
-                await notifyUser(
-                    participant.user_id,
-                    'Payment Update',
-                    message,
-                    `/events/${eventId}`, // Participant view
-                    'PAYMENT',
-                    event.organizer.id // Triggered by organizer
-                );
-            }
-        })();
+            await notifyUser({
+                recipientId: participant.user_id,
+                type: NotificationType.PAYMENT,
+                title: 'Payment Update',
+                message: message,
+                url: `/events/${eventId}`,
+                triggerUserId: event.organizer.id
+            });
+        }
 
         return NextResponse.json({
             message: 'Payment updated',

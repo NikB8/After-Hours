@@ -135,19 +135,21 @@ export async function POST(
         // Actually, easiest is to just fetch the event organizer separately *after* or *before*?
         // Let's do a separate fetch for notification to avoid complicating the critical transaction path logic too much.
         // Or better yet, just look it up.
-        (async () => {
-            const evt = await prisma.event.findUnique({ where: { id: eventId }, select: { organizer_id: true, sport: true } });
-            if (evt && evt.organizer_id !== user.id) {
-                await notifyUser({
-                    recipientId: evt.organizer_id,
-                    type: NotificationType.RSVP,
-                    title: 'New RSVP',
-                    message: `${user.name || user.email} is ${status || 'Update'} for ${evt.sport}`,
-                    url: `/events/${eventId}`,
-                    triggerUserId: user.id
-                });
-            }
-        })();
+        // NOTIFICATION LOGIC (Reliable)
+        // Fetch event details needed for notification
+        const evt = await prisma.event.findUnique({ where: { id: eventId }, select: { organizer_id: true, sport: true, start_time: true } });
+
+        if (evt && evt.organizer_id !== user.id) {
+            const dateStr = new Date(evt.start_time).toLocaleDateString();
+            await notifyUser({
+                recipientId: evt.organizer_id,
+                type: NotificationType.RSVP,
+                title: 'New RSVP',
+                message: `${user.name || user.email} is ${result.status} for ${evt.sport} on ${dateStr}`,
+                url: `/events/${eventId}`,
+                triggerUserId: user.id
+            });
+        }
 
         return NextResponse.json(result);
     } catch (error: any) {
