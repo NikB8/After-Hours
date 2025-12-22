@@ -23,9 +23,9 @@ export default function EventCard({ event }: EventCardProps) {
     const startDate = new Date(event.start_time);
 
     // Format: "Mon, Dec 15" -> "Mon"
-    const dayStr = startDate.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayStr = startDate.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
 
-    const startTimeStr = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const startTimeStr = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
 
     const timeRange = startTimeStr;
     // User requested only start time
@@ -63,8 +63,8 @@ export default function EventCard({ event }: EventCardProps) {
                     </span>
                 </div>
                 <div className="text-right">
-                    <div className="text-sm font-bold">{startDate.getDate()}</div>
-                    <div className="text-xs font-medium text-muted-foreground uppercase">{startDate.toLocaleString('default', { month: 'short' })}</div>
+                    <div className="text-sm font-bold">{startDate.toLocaleDateString('en-US', { day: 'numeric', timeZone: 'UTC' })}</div>
+                    <div className="text-xs font-medium text-muted-foreground uppercase">{startDate.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })}</div>
                 </div>
             </div>
 

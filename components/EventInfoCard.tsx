@@ -20,13 +20,13 @@ type EventInfoCardProps = {
 
 export default function EventInfoCard({ event }: EventInfoCardProps) {
     const startDate = new Date(event.start_time);
-    const dateStr = startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    const startTimeStr = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const dateStr = startDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+    const startTimeStr = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
 
     let timeRange = startTimeStr;
     if (event.end_time) {
         const endDate = new Date(event.end_time);
-        const endTimeStr = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        const endTimeStr = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' });
         timeRange = `${startTimeStr} - ${endTimeStr}`;
     }
 
