@@ -2,10 +2,19 @@ import { prisma } from '@/lib/prisma';
 import { notFound, redirect } from 'next/navigation';
 import EventForm, { EventFormData } from '@/components/EventForm';
 
+import { auth } from '@/auth';
+
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+    const session = await auth();
 
-    const currentUser = await prisma.user.findFirst();
+    if (!session?.user?.email) {
+        redirect('/api/auth/signin');
+    }
+
+    const currentUser = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
 
     if (!currentUser) {
         redirect('/api/auth/signin');
