@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/providers/ToastProvider';
+import PaymentModal from '@/components/PaymentModal';
 
 type Participant = {
     id: string;
@@ -20,6 +21,12 @@ type EventFinance = {
     financial_status: string;
     is_settled: boolean;
     organizer_id: string;
+    organizer?: {
+        name: string | null;
+        email: string;
+        image: string | null;
+        upi_id: string | null;
+    };
 };
 
 export default function FinancialHub({ eventId, userId }: { eventId: string; userId: string }) {
@@ -28,6 +35,7 @@ export default function FinancialHub({ eventId, userId }: { eventId: string; use
     const [eventData, setEventData] = useState<EventFinance | null>(null);
     const [loading, setLoading] = useState(true);
     const [isOrganizer, setIsOrganizer] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
 
     useEffect(() => {
         fetchFinanceStatus();
@@ -111,7 +119,26 @@ export default function FinancialHub({ eventId, userId }: { eventId: string; use
                     >
                         I have Paid
                     </button>
+                    <button
+                        onClick={() => setShowPaymentModal(true)}
+                        className="ml-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm"
+                    >
+                        Pay Now
+                    </button>
                 </div>
+            )}
+            {/* Modal */}
+            {eventData?.organizer && (
+                <PaymentModal
+                    isOpen={showPaymentModal}
+                    onClose={() => setShowPaymentModal(false)}
+                    onConfirm={() => {
+                        setShowPaymentModal(false);
+                        handleAction('mark_self_paid');
+                    }}
+                    organizer={eventData.organizer}
+                    amount={eventData.per_person_share}
+                />
             )}
             {myParticipant && myParticipant.payment_status === 'In Review' && (
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30 text-center">

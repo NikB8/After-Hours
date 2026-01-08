@@ -63,7 +63,15 @@ export async function GET(
                 total_collected: true,
                 is_settled: true,
                 financial_status: true,
-                organizer_id: true
+                organizer_id: true,
+                organizer: {
+                    select: {
+                        name: true,
+                        email: true,
+                        image: true,
+                        upi_id: true
+                    }
+                }
             }
         });
 

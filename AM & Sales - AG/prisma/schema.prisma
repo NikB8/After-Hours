@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Roles as per requirements
+enum UserRole {
+  AM
+  GRE
+  CLUSTER_LEAD
+  ADMIN
+  DESIGN_TEAM
+  PROJECT_TEAM
+}
+
+// Client Categories
+enum ClientCategory {
+  CAT_A
+  CAT_B
+  CAT_C
+  CAT_D
+}
+
+enum VisitCadence {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ON_DEMAND
+}
+
+enum ChecklistStatus {
+  PENDING
+  COMPLETED
+}
+
+enum ReworkStatus {
+  REQUESTED
+  DESIGN_IN_PROGRESS
+  COST_SHEET_PENDING
+  CLIENT_APPROVAL_PENDING
+  BILLING_TRIGGERED
+  SETTLED
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  COMPLETED
+  SETTLED
+}
+
+
+
+enum MeetingScope {
+  CLIENT_EXTERNAL
+  INTERNAL_CLUSTER
+  INTERNAL_PAN_INDIA
+}
+
+enum MeetingType {
+  CLIENT_VISIT
+  CLUSTER_REVIEW
+  PAN_INDIA_REVIEW
+  ONE_ON_ONE
+}
+enum ActionCategory {
+  IT
+  MAINTENANCE
+  OPS
+  HR
+  FINANCE
+  LEADERSHIP
+}
+
+model Cluster {
+  id        String   @id @default(uuid())
+  name      String
+  region    String
+  
+  users     User[]
+  clients   Client[]
+  meetings  Meeting[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  clientTeams    ClientTeam[]
+  reworkRequests ReworkRequest[]
+  checklistSubmissions ChecklistSubmission[]
+  
+  clusterId  String?
+  cluster    Cluster? @relation(fields: [clusterId], references: [id])
+}
+
+model Client {
+  id        String         @id @default(uuid())
+  name      String
+  crm_id    String         @unique
+  region    String
+  category  ClientCategory
+  visitCadence VisitCadence? @default(DAILY)
+  spocEmail String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relations
+  lifecycle ClientLifecycle?
+  team           ClientTeam[]
+  reworkRequests ReworkRequest[]
+  meetings       Meeting[]
+
+  checklistSubmissions ChecklistSubmission[]
+  
+  clusterId  String?
+  cluster    Cluster? @relation(fields: [clusterId], references: [id])
+}
+
+// 1-to-1 Link with Client, tracking lifecycle milestones
+model ClientLifecycle {
+  id       String @id @default(uuid())
+  clientId String @unique
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Lifecycle Steps (Using DateTime? to track WHEN it happened, null means not done)
+  agreement_synopsis_received     DateTime?
+  parking_readiness_confirmed     DateTime?
+  kick_off_call_done              DateTime?
+  agreement_summary_shared        DateTime? // 30 days prior trigger logic will rely on this or contract dates
+  welcome_email_sent              DateTime?
+  lobby_listing_updated           DateTime?
+  move_in_ceremony_planned        DateTime?
+  asset_checklist_completed       DateTime?
+  emergency_team_confirmed        DateTime?
+  park_plus_requirements_captured DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Generic Team Mapping (User -> Client with responsibility)
+model ClientTeam {
+  id             String @id @default(uuid())
+  clientId       String
+  userId         String
+  responsibility String // e.g., "Primary Manager", "Support", "Escalation"
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clientId, userId]) // Prevent duplicate assignment of same user to same client
+}
+
+model ReworkRequest {
+  id          String       @id @default(uuid())
+  description String
+  status      ReworkStatus @default(REQUESTED)
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  amId String
+  am   User   @relation(fields: [amId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  costSheet CostSheet?
+}
+
+model CostSheet {
+  id                 String  @id @default(uuid())
+  amount             Decimal
+  currency           String  @default("USD")
+  pdfUrl             String?
+  isApprovedByClient Boolean @default(false)
+
+  reworkRequestId String        @unique
+  reworkRequest   ReworkRequest @relation(fields: [reworkRequestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model Meeting {
+  id        String        @id @default(uuid())
+  title     String
+  date      DateTime
+
+  status    MeetingStatus @default(SCHEDULED)
+  scope     MeetingScope  @default(CLIENT_EXTERNAL)
+  type      MeetingType?  @default(CLIENT_VISIT)
+  
+  clientId  String?
+  client    Client?       @relation(fields: [clientId], references: [id])
+  
+  clusterId String?
+  cluster   Cluster?      @relation(fields: [clusterId], references: [id])
+  
+  minutes   MeetingMinutes?
+  actionItems ActionItem[]
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model MeetingMinutes {
+  id        String   @id @default(uuid())
+  summary   String
+  transcript String?
+  
+  meetingId String   @unique
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model ActionItem {
+  id          String         @id @default(uuid())
+  description String
+  priority    ActionPriority
+  category    ActionCategory
+  dueDate     DateTime?
+  isInternal  Boolean        @default(false)
+  
+  meetingId   String
+  meeting     Meeting        @relation(fields: [meetingId], references: [id])
+  
+  assignedToId String?       // Optional: Internal user
+  ticket      Ticket?
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Ticket {
+  id               String       @id @default(uuid())
+  externalTicketId String?
+  status           TicketStatus @default(OPEN)
+  department       String       // Derived from Category
+
+  actionItemId     String       @unique
+  actionItem       ActionItem   @relation(fields: [actionItemId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model ChecklistTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  items     Json
+  role      UserRole
+  
+  submissions ChecklistSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChecklistSubmission {
+  id         String          @id @default(uuid())
+  
+  templateId String
+  template   ChecklistTemplate @relation(fields: [templateId], references: [id])
+  
+  userId     String
+  user       User              @relation(fields: [userId], references: [id])
+  
+  clientId   String
+  client     Client            @relation(fields: [clientId], references: [id])
+  
+  date       DateTime
+  data       Json?
+  status     ChecklistStatus   @default(PENDING)
+
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+}

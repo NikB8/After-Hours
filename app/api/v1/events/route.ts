@@ -35,6 +35,14 @@ export async function POST(request: Request) {
         const userId = session.user.id;
         const companyId = (session.user as any).primary_company_id || null;
 
+        // 2. Update Organizer UPI if provided (Smart Check Upsert)
+        if (body.organizer_upi_id) {
+            await prisma.user.update({
+                where: { id: userId },
+                data: { upi_id: body.organizer_upi_id }
+            });
+        }
+
         // 3. Create Event & Assign Role (if needed)
         const event = await prisma.$transaction(async (tx) => {
             const newEvent = await tx.event.create({

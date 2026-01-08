@@ -235,3 +235,6 @@ body {
     @apply bg-background/80 backdrop-blur-md border-t border-border p-4;
   }
 }
+.ph-no-capture {
+  filter: blur(5px);
+}

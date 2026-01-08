@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import UserMultiSelect from '@/components/UserMultiSelect';
 import { triggerHaptic } from '@/lib/haptics';
@@ -15,6 +15,7 @@ export interface EventFormData {
     estimated_cost: number;
     transport_mode?: string;
     car_seats?: number;
+    organizer_upi_id?: string;
 }
 
 interface EventFormProps {
@@ -30,6 +31,8 @@ export default function EventForm({ userEmail, initialData, eventId, isEditMode 
     const [error, setError] = useState('');
     const [showCustomSport, setShowCustomSport] = useState(false);
     const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
+    const [currentUserUpi, setCurrentUserUpi] = useState<string | null>(null);
+    const [fetchingUser, setFetchingUser] = useState(true);
 
     const [formData, setFormData] = useState<EventFormData>(initialData || {
         sport: '',
@@ -40,8 +43,27 @@ export default function EventForm({ userEmail, initialData, eventId, isEditMode 
         max_players: 4,
         estimated_cost: 0,
         transport_mode: 'Independent',
-        car_seats: 0
+        car_seats: 0,
+        organizer_upi_id: ''
     });
+
+    useEffect(() => {
+        // Fetch current user details to check for UPI ID
+        const fetchUser = async () => {
+            try {
+                const res = await fetch('/api/v1/users/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCurrentUserUpi(data.upi_id);
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
+            } finally {
+                setFetchingUser(false);
+            }
+        };
+        fetchUser();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -255,6 +277,36 @@ export default function EventForm({ userEmail, initialData, eventId, isEditMode 
                     </div>
                 </div>
             </div>
+
+            {/* Smart Check for UPI */}
+            {Number(formData.estimated_cost) > 0 && !fetchingUser && !currentUserUpi && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 animate-in fade-in slide-in-from-top-4 mb-6">
+                    <div className="flex items-start gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-full text-blue-600 dark:text-blue-200">
+                            <span className="text-xl">💳</span>
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Receive Payments Instantly</h4>
+                            <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                                To collect <b>₹{formData.estimated_cost}</b> from others, we need your UPI ID (e.g., username@oksbi). We'll save this for future events.
+                            </p>
+                            <div>
+                                <label className="form-label text-blue-900 dark:text-blue-100">Your UPI ID <span className="text-red-500">*</span></label>
+                                <input
+                                    type="text"
+                                    name="organizer_upi_id"
+                                    required
+                                    placeholder="e.g. 9876543210@paytm"
+                                    // pattern="[\w\.\-]{3,}@[\w\.\-]{3,}" // Basic UPI regex
+                                    value={formData.organizer_upi_id || ''}
+                                    onChange={handleChange}
+                                    className="form-input border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {!isEditMode && (
                 <div className="pt-4 border-t border-border">

@@ -33,6 +33,7 @@ export const viewport = {
 };
 
 import { ToastProvider } from "@/components/providers/ToastProvider";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
 import Providers from "@/components/Providers";
 import AppShell from "@/components/AppShell";
 import DynamicMetaTheme from "@/components/DynamicMetaTheme";
@@ -48,9 +49,11 @@ export default function RootLayout({
         <Providers>
           <DynamicMetaTheme />
           <ToastProvider>
-            <AppShell>
-              {children}
-            </AppShell>
+            <PostHogProvider>
+              <AppShell>
+                {children}
+              </AppShell>
+            </PostHogProvider>
           </ToastProvider>
         </Providers>
       </body >
